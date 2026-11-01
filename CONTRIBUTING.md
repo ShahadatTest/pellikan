@@ -176,4 +176,3 @@ Good first jobs, roughly in order of value:
 2. Launch the Tauri window on macOS and fix what breaks.
 3. The accessibility fixes listed in [ACCESSIBILITY.md](ACCESSIBILITY.md#known-gaps).
 4. Move notes and highlights into `user.db` (needs Rust write commands).
-5. Add a `LICENSE` file for the code. `package.json` says MIT; the repository has no license text yet.

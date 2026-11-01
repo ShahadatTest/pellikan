@@ -7,10 +7,11 @@
 A local-first Bible study app in the spirit of SWORD and Logos. Open source. Your notes, highlights and downloaded
 texts live on your computer. Nothing about your reading is sent anywhere.
 
-> **Status: early.** There is no installer to download yet. You run Pellikan by cloning this repository and building it
-> (see [Install from GitHub](#install-from-github)). The desktop window has never been launched
-> end to end; the Rust side compiles and its tests pass on macOS, and the interface has been checked in a browser.
-> See [What has been tested](#what-has-been-tested) for exactly what that means.
+> **Status: early.** A preview installer for macOS (Apple Silicon) is available from the
+> [v0.0.1 release](https://github.com/philorien/pellikan/releases/tag/v0.0.1) (see [Download prebuilt app](#download-prebuilt-app-macos-apple-silicon)).
+> You can also build Pellikan from source to run in a browser or as a desktop app (see [Build from source](#build-from-source)).
+> The packaged app is new, unsigned, and has had limited real-world testing.
+> See [What has been tested](#what-has-been-tested) for current testing status.
 
 ## What it does
 
@@ -34,26 +35,47 @@ Not built yet: importing your own books (EPUB, PDF, DOCX), AI-assisted search, s
 
 ## Install from GitHub
 
-There are no prebuilt app downloads. The only release on GitHub, [`packs`](https://github.com/philorien/pellikan/releases/tag/packs),
-holds the optional translation packs the app downloads for itself. **Do not download those by hand.** To use Pellikan,
-build it from source.
+You can download the prebuilt app for macOS (Apple Silicon) or build from source.
 
-### 1. Requirements
+### Download prebuilt app (macOS Apple Silicon)
+
+An early preview release is available for Apple Silicon Macs (M1/M2/M3/M4):
+
+1. Go to the [v0.0.1 release](https://github.com/philorien/pellikan/releases/tag/v0.0.1) on GitHub.
+2. Under **Assets**, download **`Pellikan_0.0.1_aarch64.dmg`** (~78 MB).
+3. Open the disk image and drag **Pellikan** into your **Applications** folder.
+4. **macOS Gatekeeper:** Because this preview build is unsigned, macOS will say it cannot verify the developer on first launch:
+   - Right-click (or Control-click) `Pellikan.app` in `/Applications`, choose **Open**, and click **Open** in the confirmation dialog.
+   - If macOS still refuses to run it, open Terminal and clear the quarantine attribute:
+     ```bash
+     xattr -dr com.apple.quarantine /Applications/Pellikan.app
+     ```
+
+> **Note on translation packs:** The separate [`packs`](https://github.com/philorien/pellikan/releases/tag/packs) release on GitHub holds the optional translation packs (ASV, YLT, Darby) that the app downloads automatically via the Library page. Do not download those by hand.
+
+### Build from source
+
+To develop Pellikan, run it in a browser, use an Intel Mac, or run on Linux and Windows, build from source.
+
+#### 1. Requirements
 
 | Tool | Why | Check |
 | --- | --- | --- |
 | **Node 22.18 or newer** | The UI and the data scripts. The scripts use Node's built-in `node:sqlite` and run TypeScript directly. | `node -v` |
-| **Rust** (stable) | Only for the desktop window | `rustc -V` |
-| **Xcode Command Line Tools** (macOS) | Linker and the system web view | `xcode-select --install` |
-| **About 600 MB of disk** | 100 MB of downloaded source texts and a 280 MB database | |
-| **Network, once** | The data build downloads the source texts | |
+| **Git** | Cloning the repository | `git --version` |
+| **Rust** (stable) | Only for running or building the desktop window | `rustc -V` |
+| **Xcode Command Line Tools** (macOS) | Linker and the system web view (only for desktop / Rust) | `xcode-select --install` |
+| **Disk space** | ~700 MB for browser mode; ~4 GB total if compiling the desktop app (Rust build cache) | |
+| **Network, once** | The initial data build downloads the source texts (~100 MB) | |
 
-Install Rust with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`.
+Install Rust with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`. If you just installed it, ensure Cargo is in your `PATH` by running `source "$HOME/.cargo/env"` or restarting your terminal.
 
-macOS is the only platform it has been built on. Linux and Windows should work with Tauri's usual prerequisites
+If you only want to use or develop Pellikan in a browser (`npm run dev`), you do **not** need Rust or Xcode Command Line Tools.
+
+macOS is the primary platform it has been built and tested on. Linux and Windows should work with Tauri's usual prerequisites
 ([Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/)) but have not been tried.
 
-### 2. Get the code and build the data
+#### 2. Get the code and build the data
 
 ```bash
 git clone https://github.com/philorien/pellikan.git
@@ -62,51 +84,72 @@ npm install
 npm run data
 ```
 
-`npm run data` downloads the public-domain and openly licensed source texts, builds `data/build/bible.db` (about 280 MB),
-and runs 64 integrity checks. It prints a line per source so you can see what went in. If it finishes with
-`All checks passed`, the data is good.
+`npm run data` downloads the public-domain and openly licensed source texts into `data/sources/` (~100 MB), builds `data/build/bible.db` (~270 MB, bundling WEB, BSB and KJV), and runs 64 integrity checks. It prints a line per source so you can see what went in. If it finishes with `All checks passed`, the database is ready.
 
-### 3. Run it
+`bible.db` must exist before running either the browser dev server or the desktop window. If you supply your own licensed ESV EPUB, place it in `data/sources/` before running `npm run data` (see [DATA_SOURCES.md](DATA_SOURCES.md)).
 
-In a browser, no Rust needed:
+#### 3. Run it
+
+##### Option A: In a browser (no Rust needed)
+
+This is the quickest way to get started. The browser dev server serves all database queries locally via internal API routes.
 
 ```bash
 npm run dev          # http://localhost:3000
 ```
 
-As a desktop app:
+##### Option B: As a desktop app (Tauri)
+
+Requires Rust and Xcode Command Line Tools on macOS:
 
 ```bash
 npm run tauri:dev
 ```
 
 **macOS note.** If the Rust build fails at link time with `tapi error: malformed file ... libSystem.B.tbd`, your
-Command Line Tools ship a newer SDK than your Rust toolchain understands. Point the build at an older SDK:
+Command Line Tools ship a newer SDK than your Rust toolchain understands (such as `MacOSX27.0.sdk`). Point the build at an older installed SDK:
 
 ```bash
 ls /Library/Developer/CommandLineTools/SDKs/
 SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk npm run tauri:dev
 ```
 
-### 4. Build an installer (optional)
+If `cargo` is reported as not found, make sure `$HOME/.cargo/bin` is in your `PATH`.
+
+#### 4. Build an installer (optional)
 
 ```bash
 npm run data:build:release     # rebuilds bible.db WITHOUT the ESV
 npm run tauri:build
 ```
 
+If your macOS environment requires the SDK workaround above:
+
+```bash
+SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk npm run tauri:build
+```
+
 Use `data:build:release`, not `data:build`, for anything you will share. The installer bundles `data/build/bible.db`,
 and a plain build includes the ESV if your epub is present, which you may not redistribute.
 
-The result is **unsigned**. Running it on your own Mac is fine. To give it to other people you need an Apple Developer
-ID to sign and notarize it, or macOS will warn them away.
+The installer is placed in `src-tauri/target/release/bundle/dmg/` (or `.app` in `bundle/macos/`). The result is **unsigned**. Running it on your own Mac is fine (if Gatekeeper blocks it, right-click the app and choose **Open**). To give it to other people you need an Apple Developer ID to sign and notarize it, or macOS will warn them away.
 
 ### Getting the other translations
 
 Open **Library**, find **Bible translations**, and press **Download** next to ASV, YLT or Darby. The app fetches the
-list from this repository's `packs` release, downloads the file, checks its SHA-256, validates it, and stores it as one
-file in your app data folder. **Remove** deletes that file. If you are offline, the page says so and everything you
-already have keeps working.
+list from this repository's `packs` release, downloads the pack, verifies its SHA-256 checksum, and installs it:
+
+- In the desktop app, packs are saved to your app data folder (`~/Library/Application Support/com.lorienweb.pellikan/packs/` on macOS).
+- In the browser dev server (`npm run dev`), packs are saved to `data/build/installed/`.
+
+**Remove** deletes that file. If you are offline, the page says so and everything you already have keeps working.
+
+To build the translation packs locally yourself instead of downloading from GitHub:
+
+```bash
+npm run data:fetch -- --packs
+npm run data:packs
+```
 
 To point the app at your own host instead, set `PELLIKAN_PACKS_URL` to a manifest URL (https only; plain `http` works
 for localhost). Details are in [DATA_SOURCES.md](DATA_SOURCES.md#optional-translations-downloaded-on-demand).
@@ -119,10 +162,10 @@ for localhost). Details are in [DATA_SOURCES.md](DATA_SOURCES.md#optional-transl
 | `npm run data:fetch` / `data:build` / `data:check` | The three steps separately |
 | `npm run data:build:release` | Build without the ESV, for installers |
 | `npm run data:fetch -- --packs` then `npm run data:packs` | Build the downloadable translation packs into `data/build/packs/` |
-| `npm run dev` | Browser dev server with a dev-only query API |
+| `npm run dev` | Browser dev server with a dev-only query API (http://localhost:3000) |
 | `npm run tauri:dev` / `tauri:build` | Desktop app / installer |
 | `npm test` | Node unit tests |
-| `cd src-tauri && cargo test --lib` | Rust tests. Those that need data run against `data/build/bible.db` and silently pass if it is missing, so build it first |
+| `cd src-tauri && cargo test --lib` | Rust tests. Those that need data run against `data/build/bible.db` and silently pass if it is missing, so build it first (use `SDKROOT` if needed on macOS) |
 | `npm run build` | Static site build |
 
 ## How it is built
@@ -165,8 +208,7 @@ Checked, with the commands that check it:
   Word Study lexicon entries, Matthew Henry, cross-references, the dictionary, and installing and removing a
   translation pack from the real `packs` release.
 
-**Not verified:** the Tauri window itself (never launched), Windows and Linux, narrow phone-width layouts, and
-accessibility with a screen reader. See [ACCESSIBILITY.md](ACCESSIBILITY.md) for the gaps found so far.
+**Not verified:** Windows and Linux, narrow phone-width layouts, and accessibility with a screen reader. The packaged macOS desktop app is in early preview (v0.0.1) and has had little real-world testing. See [ACCESSIBILITY.md](ACCESSIBILITY.md) for the gaps found so far.
 
 ## Known limitations
 
@@ -182,7 +224,7 @@ Measured details are in [DATA_SOURCES.md](DATA_SOURCES.md). The ones that matter
 
 ## Roadmap
 
-1. Launch and fix the Tauri window on macOS, then add CI that runs the Node and Rust tests.
+1. Refine the packaged desktop app on macOS, then add CI that runs the Node and Rust tests.
 2. Move notes, highlights and bookmarks into `user.db` (the schema is ready; it needs Rust write commands).
 3. Import EPUB, PDF, DOCX and plain text into `user.db`, with Scripture references found and linked.
 4. AI-assisted search and questions with a bring-your-own key (Anthropic or Gemini), keys in the OS keychain and never
@@ -194,13 +236,13 @@ Measured details are in [DATA_SOURCES.md](DATA_SOURCES.md). The ones that matter
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md). It covers the workflow, the rules that protect the licensing of the data,
-and how to add a translation or a data source. [AGENTS.md](AGENTS.md) holds the same conventions in the short form
-for AI coding agents. Accessibility problems are bugs: see [ACCESSIBILITY.md](ACCESSIBILITY.md).
+and how to add a translation or a data source. All contributions must follow the [Code of Conduct](CODE_OF_CONDUCT.md)
+and the [AI Policy](AI_POLICY.md). [AGENTS.md](AGENTS.md) holds the same conventions in the short form for AI coding
+agents. Accessibility problems are bugs: see [ACCESSIBILITY.md](ACCESSIBILITY.md).
 
 ## License
 
-`package.json` declares the code as **MIT**. There is no `LICENSE` file in the repository yet, which means the terms
-are not fully stated until one is added. The data is licensed separately and is not MIT: see
+The code is licensed under the **GNU Affero General Public License v3.0** (see [LICENSE](LICENSE)). The data is licensed separately: see
 [DATA_SOURCES.md](DATA_SOURCES.md). The built database contains CC BY-SA material (MorphGNT and Strong's Greek), so
 distributing it carries ShareAlike obligations. Every source's license and required credit line also appear in the
 app on the **Credits** page.
