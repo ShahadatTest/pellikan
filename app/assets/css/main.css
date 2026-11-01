@@ -75,6 +75,11 @@
 }
 
 html, body, #__nuxt { height: 100%; }
+/* Mobile browsers: 100% includes the area behind the collapsing address bar. dvh tracks what is visible. */
+@supports (height: 100dvh) { html, body, #__nuxt { height: 100dvh; } }
+html { -webkit-text-size-adjust: 100%; }
+/* Height of the mobile bottom nav, including the home-indicator inset. */
+:root { --nav-h: calc(3.5rem + env(safe-area-inset-bottom)); }
 
 body {
   background: var(--bg);
@@ -82,6 +87,7 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* Slim scrollbars that stay out of the way inside panels. */

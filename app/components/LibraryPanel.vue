@@ -4,7 +4,10 @@ import { Library } from 'lucide-vue-next'
 interface Source { id: string; name: string; kind: string }
 const { data: sources } = await useAsyncData('sources', () => query<Source>('sources'))
 
-const KIND: Record<string, string> = { translation: 'Bible', 'original-text': 'Original text' }
+const KIND: Record<string, string> = {
+  translation: 'Bible', 'original-text': 'Original text', morphology: 'Morphology', lexicon: 'Lexicon', dictionary: 'Dictionary',
+  commentary: 'Commentary', 'cross-references': 'Cross-refs',
+}
 const COLORS = ['#1f4a3a', '#5a2323', '#1f3350', '#4a3a1f']
 </script>
 

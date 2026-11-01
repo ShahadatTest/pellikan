@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Renders one verse from its token list: [text, strongs|null, flags, noteSeq?]
-// flags: 1 = words of Jesus, 2 = footnote marker. No v-html anywhere: text is always bound as text.
+// flags: 1 = words of Jesus, 2 = footnote marker, 4 = words the translators supplied (italic). No v-html anywhere: text is always bound as text.
 //
 // Strong's numbers on the English words are deliberately NOT clickable. In the WEB source they are not reliably
 // aligned to the right word in the Old Testament (e.g. "God" is tagged H3068 far more often than H430), so
@@ -36,7 +36,7 @@ const lines = computed(() => {
         @click.stop="emit('note', t[3]!)"
         @keydown.enter.stop="emit('note', t[3]!)"
       >&#9642;</sup>
-      <span v-else :class="redLetters !== false && t[2] & 1 ? 'text-jesus' : ''">{{ t[0] }}</span>
+      <span v-else :class="[redLetters !== false && t[2] & 1 ? 'text-jesus' : '', t[2] & 4 ? 'italic' : '']">{{ t[0] }}</span>
     </template>
   </span>
 </template>

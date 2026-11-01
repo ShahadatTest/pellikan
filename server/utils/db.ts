@@ -3,6 +3,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import { readFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { PACK_QUERIES, packDb } from './packs'
 
 const ROOT = process.cwd()
 let db: DatabaseSync | null = null
@@ -34,5 +35,7 @@ export function runNamedQuery(name: string, params: Record<string, unknown>) {
     }
     bound[k] = v
   }
-  return open().prepare(sql).all(bound)
+  // Reader and search queries for a downloaded translation run on that translation's own database.
+  const pack = PACK_QUERIES.includes(name) && typeof bound.translation === 'string' ? packDb(bound.translation) : null
+  return (pack ?? open()).prepare(sql).all(bound)
 }

@@ -1,15 +1,18 @@
 <script setup lang="ts">
 interface Source { id: string; name: string; kind: string; language: string | null; license: string; attribution: string }
 const { data: sources, error } = await useAsyncData('sources', () => query<Source>('sources'))
-const KIND: Record<string, string> = { translation: 'Bible translation', 'original-text': 'Original-language text' }
+const KIND: Record<string, string> = {
+  translation: 'Bible translation', 'original-text': 'Original-language text', morphology: 'Morphology', lexicon: 'Lexicon',
+  dictionary: 'Bible dictionary', commentary: 'Commentary', 'cross-references': 'Cross-references',
+}
 useHead({ title: 'Library · Pellikan' })
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto p-4">
-    <div class="mx-auto max-w-3xl rounded-xl border border-line bg-surface px-6 py-6">
+  <div class="h-full overflow-y-auto p-2 md:p-4">
+    <div class="mx-auto max-w-3xl rounded-xl border border-line bg-surface px-4 py-5 md:px-6 md:py-6">
       <h1 class="font-reading text-3xl font-semibold">Library</h1>
-      <p class="mt-2 text-muted">What is installed. Commentaries, dictionaries and imported books will show up here once those features exist.</p>
+      <p class="mt-2 text-muted">What is installed. Imported books will show up here once that feature exists. Dictionaries open in the <NuxtLink to="/dictionary" class="text-accent hover:underline">Dictionary</NuxtLink>; lexicons appear in Word Study, commentary beside the text.</p>
       <p v-if="error" class="mt-6 text-red-500">Could not load the library: {{ error.statusMessage || error.message }}</p>
       <ul v-else class="mt-6 grid gap-3 sm:grid-cols-2">
         <li v-for="s in sources" :key="s.id" class="rounded-lg border border-line bg-bg p-4">
@@ -18,7 +21,8 @@ useHead({ title: 'Library · Pellikan' })
           <p class="mt-1 text-sm text-muted">{{ s.license }}</p>
         </li>
       </ul>
-      <NuxtLink to="/credits" class="mt-6 inline-block text-sm text-accent hover:underline">Full credits and licenses</NuxtLink>
+      <TranslationManager />
+      <NuxtLink to="/credits" class="mt-8 inline-block text-sm text-accent hover:underline">Full credits and licenses</NuxtLink>
     </div>
   </div>
 </template>

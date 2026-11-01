@@ -29,7 +29,7 @@ const themes: Array<{ id: ThemeChoice; label: string; icon: typeof Sun }> = [
       @click="open = !open"
     ><Settings class="size-5" /></button>
 
-    <div v-if="open" role="dialog" aria-label="Reading settings" class="absolute right-0 top-12 z-40 w-72 rounded-xl border border-line bg-surface p-4 shadow-2xl">
+    <div v-if="open" role="dialog" aria-label="Reading settings" class="absolute right-0 top-12 z-40 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl border border-line bg-surface p-4 shadow-2xl">
       <p class="text-xs font-semibold uppercase tracking-wider text-faint">Theme</p>
       <div class="mt-2 grid grid-cols-3 gap-1 rounded-lg bg-bg p-1" role="radiogroup" aria-label="Theme">
         <button
@@ -50,7 +50,7 @@ const themes: Array<{ id: ThemeChoice; label: string; icon: typeof Sun }> = [
         <input
           type="range" min="16" max="30" step="1"
           :value="prefs.fontSize"
-          class="h-1 flex-1 cursor-pointer accent-[var(--accent)]"
+          class="h-6 flex-1 cursor-pointer accent-[var(--accent)]"
           aria-label="Reading text size"
           @input="setPrefs({ fontSize: Number(($event.target as HTMLInputElement).value) })"
         />
@@ -61,6 +61,8 @@ const themes: Array<{ id: ThemeChoice; label: string; icon: typeof Sun }> = [
         Words of Jesus in red
         <input type="checkbox" :checked="prefs.redLetters" class="size-4 accent-[var(--accent)]" @change="setPrefs({ redLetters: ($event.target as HTMLInputElement).checked })" />
       </label>
+
+      <NuxtLink to="/credits" class="mt-4 block border-t border-line pt-3 text-sm text-muted hover:text-fg md:hidden" @click="open = false">Credits and licenses</NuxtLink>
     </div>
   </div>
 </template>

@@ -46,8 +46,8 @@ useHead({ title: 'Search · Pellikan' })
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto p-4">
-    <div class="mx-auto max-w-3xl rounded-xl border border-line bg-surface px-6 py-6">
+  <div class="h-full overflow-y-auto p-2 md:p-4">
+    <div class="mx-auto max-w-3xl rounded-xl border border-line bg-surface px-4 py-5 md:px-6 md:py-6">
       <h1 class="font-reading text-3xl font-semibold">Search the {{ translation.info.value?.name ?? 'Bible' }}</h1>
       <form class="mt-4 flex gap-2" @submit.prevent="submit">
         <div class="flex flex-1 items-center gap-2 rounded-lg border border-line bg-bg px-3 focus-within:border-accent">

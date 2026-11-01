@@ -2,7 +2,7 @@
 -- Anything the user creates (notes, highlights, imported books) lives in user.sql, a separate
 -- database file, so shipping new reference data can never touch it.
 --
--- Schema version: 1
+-- Schema version: 2
 
 CREATE TABLE meta (
   key   TEXT PRIMARY KEY,
@@ -14,7 +14,7 @@ CREATE TABLE meta (
 CREATE TABLE sources (
   id          TEXT PRIMARY KEY,                 -- 'WEB', 'OSHB', 'SBLGNT', 'MORPHGNT'
   name        TEXT NOT NULL,
-  kind        TEXT NOT NULL CHECK (kind IN ('translation', 'original-text', 'morphology')),
+  kind        TEXT NOT NULL CHECK (kind IN ('translation', 'original-text', 'morphology', 'lexicon', 'dictionary', 'commentary', 'cross-references')),
   language    TEXT NOT NULL,                    -- BCP 47: 'en', 'he', 'grc'
   license     TEXT NOT NULL,
   license_url TEXT,
@@ -33,7 +33,7 @@ CREATE TABLE books (
 );
 
 -- ---------------------------------------------------------------------------------------------
--- Translations (currently WEB)
+-- Translations (WEB, BSB, KJV, ASV, YLT, Darby, and the ESV when the user supplies the epub)
 -- ---------------------------------------------------------------------------------------------
 
 CREATE TABLE verses (
@@ -52,7 +52,8 @@ CREATE TABLE verses (
 -- tokens: JSON array of [text, strongs, flags, noteSeq?]
 --   text    string to render ("\n" is a line break)
 --   strongs Strong's number the translators tagged this English word with ('H1254', 'G3056'), or null
---   flags   bit 1 = words of Jesus, bit 2 = footnote/cross-reference marker (text is empty; noteSeq points at notes.seq)
+--   flags   bit 1 = words of Jesus, bit 2 = footnote/cross-reference marker (text is empty; noteSeq points at notes.seq),
+--           bit 4 = words the translators supplied (italic in the KJV and ASV)
 -- Joining every token's text reproduces verses.text exactly.
 
 CREATE TABLE headings (
@@ -62,7 +63,7 @@ CREATE TABLE headings (
   chapter        INTEGER NOT NULL,
   before_verse   INTEGER NOT NULL,              -- shown above this verse
   seq            INTEGER NOT NULL,              -- order among headings sharing before_verse
-  kind           TEXT    NOT NULL CHECK (kind IN ('ms', 'd', 'sp')), -- major section, psalm description, speaker
+  kind           TEXT    NOT NULL CHECK (kind IN ('ms', 'd', 'sp', 'ac')), -- section, psalm description, speaker, acrostic letter
   text           TEXT    NOT NULL
 );
 CREATE INDEX headings_ref ON headings (translation_id, book_id, chapter, before_verse, seq);
@@ -110,7 +111,8 @@ CREATE TABLE words (
   search      TEXT    NOT NULL,                 -- normalized form (see shared/text.ts) for searching
   lemma       TEXT,                             -- dictionary form. Greek only until a lexicon is loaded
   lemma_key   TEXT    NOT NULL,                 -- groups all forms of one word: Greek lemma, or 'H1254a'
-  strongs     TEXT,                             -- 'H1254' (no disambiguation letter). Hebrew/Aramaic only
+  strongs     TEXT,                             -- 'H1254' (no disambiguation letter). Hebrew/Aramaic from OSHB; Greek filled in
+                                                --   at build time by matching the lemma against Strong's (see lexicon.mjs), NULL if ambiguous
   pos         TEXT,                             -- Greek part of speech code (MorphGNT)
   morph       TEXT    NOT NULL,                 -- raw morphology code; decoded in shared/morph.ts
   variant     TEXT CHECK (variant IN ('ketiv', 'qere')), -- written vs. read form. Hide 'qere' by default
@@ -140,3 +142,87 @@ CREATE TABLE versification_map (
   partial     INTEGER NOT NULL DEFAULT 0,       -- 1 = only part of the verse moves (7 cases)
   PRIMARY KEY (book_id, src_chapter, src_verse, partial)
 ) WITHOUT ROWID;
+
+-- ---------------------------------------------------------------------------------------------
+-- Lexicons: Strong's (Hebrew and Greek), Brown-Driver-Briggs, Thayer's
+-- ---------------------------------------------------------------------------------------------
+
+CREATE TABLE lexicon_entries (
+  id         INTEGER PRIMARY KEY,
+  source_id  TEXT NOT NULL REFERENCES sources (id),
+  entry_id   TEXT NOT NULL,                     -- the source's own id: 'H1254', 'G3056', BDB 'a.ab.ac', Thayer 'G3056'
+  lang       TEXT NOT NULL CHECK (lang IN ('heb', 'arc', 'grc')),
+  headword   TEXT NOT NULL,
+  translit   TEXT,
+  pron       TEXT,
+  pos        TEXT,
+  gloss      TEXT,                              -- short definition, one line
+  body       TEXT NOT NULL,                     -- full entry as plain text; "\n" separates paragraphs
+  derivation TEXT,                              -- Strong's: where the word comes from
+  usage      TEXT,                              -- Strong's: how the KJV renders it
+  UNIQUE (source_id, entry_id)
+);
+
+-- Which Strong's numbers an entry belongs to. Strong's entries link to themselves; BDB entries link through the Open
+-- Scriptures lexical index; Thayer's through its own tagging (3,791 of 6,134 entries are tagged).
+CREATE TABLE lexicon_links (
+  strongs  TEXT    NOT NULL,                    -- 'H1254', 'G3056'
+  entry_pk INTEGER NOT NULL REFERENCES lexicon_entries (id),
+  PRIMARY KEY (strongs, entry_pk)
+) WITHOUT ROWID;
+CREATE INDEX lexicon_links_entry ON lexicon_links (entry_pk);
+
+-- ---------------------------------------------------------------------------------------------
+-- Dictionaries (Easton's, Smith's)
+-- ---------------------------------------------------------------------------------------------
+
+CREATE TABLE dictionary_entries (
+  id            INTEGER PRIMARY KEY,
+  source_id     TEXT NOT NULL REFERENCES sources (id),
+  headword      TEXT NOT NULL,
+  headword_norm TEXT NOT NULL,                  -- lower-cased, accents folded: lookup and prefix search
+  body          TEXT NOT NULL,                  -- plain text; "\n" separates paragraphs
+  UNIQUE (source_id, headword)
+);
+CREATE INDEX dictionary_norm ON dictionary_entries (headword_norm);
+
+CREATE VIRTUAL TABLE dictionary_fts USING fts5 (
+  headword, body,
+  content = 'dictionary_entries',
+  content_rowid = 'id',
+  tokenize = 'porter unicode61 remove_diacritics 2'
+);
+
+-- ---------------------------------------------------------------------------------------------
+-- Commentary (Matthew Henry)
+-- ---------------------------------------------------------------------------------------------
+
+CREATE TABLE commentary_entries (
+  id          INTEGER PRIMARY KEY,
+  source_id   TEXT    NOT NULL REFERENCES sources (id),
+  book_id     INTEGER NOT NULL REFERENCES books (id),
+  chapter     INTEGER NOT NULL,                 -- 0 = introduction to the whole book
+  verse_start INTEGER NOT NULL,                 -- 0 = introduction to the chapter
+  verse_end   INTEGER NOT NULL,                 -- the passage this comment covers; equal to verse_start for a single verse
+  body        TEXT    NOT NULL                  -- plain text; "\n" separates paragraphs
+);
+CREATE INDEX commentary_ref ON commentary_entries (source_id, book_id, chapter, verse_start);
+
+-- ---------------------------------------------------------------------------------------------
+-- Cross-references (OpenBible.info, Treasury of Scripture Knowledge), English verse numbering
+-- ---------------------------------------------------------------------------------------------
+
+CREATE TABLE cross_references (
+  id            INTEGER PRIMARY KEY,
+  source_id     TEXT    NOT NULL REFERENCES sources (id),
+  book_id       INTEGER NOT NULL REFERENCES books (id),
+  chapter       INTEGER NOT NULL,
+  verse         INTEGER NOT NULL,
+  to_book_id    INTEGER NOT NULL REFERENCES books (id),
+  to_chapter    INTEGER NOT NULL,
+  to_verse      INTEGER NOT NULL,
+  to_verse_end  INTEGER NOT NULL,               -- equal to to_verse for a single verse
+  weight        INTEGER NOT NULL DEFAULT 0,     -- OpenBible: community votes (can be negative). TSK: 0
+  note          TEXT                            -- TSK: the key phrase the reference supports
+);
+CREATE INDEX cross_ref_from ON cross_references (book_id, chapter, verse, source_id);

@@ -26,18 +26,46 @@ export function useBooks() {
   return { BOOKS, BOOK_BY_OSIS }
 }
 
-export interface TranslationInfo { id: string; name: string; kind: string; attribution: string }
+export interface TranslationInfo { id: string; name: string; kind: string; attribution: string; license?: string; license_url?: string | null; source_url?: string; pack?: boolean }
+export interface CatalogEntry { id: string; name: string; bytes: number; sha256: string; url: string }
 
-/** The reader's current translation, chosen from whatever this bible.db contains. Falls back to the WEB. */
+/** Plain error text from either a Tauri command (a string) or the dev server (an H3 error). */
+export function errorMessage(err: unknown): string {
+  if (typeof err === 'string') return err
+  const e = err as { data?: { statusMessage?: string }; statusMessage?: string; message?: string }
+  return e?.data?.statusMessage || e?.statusMessage || e?.message || String(err)
+}
+
+/** Translation-pack commands: Rust in the desktop app, the dev server's /api/translations in a plain browser. */
+export async function translationCommand<T = unknown>(cmd: 'translation_catalog' | 'installed_translations' | 'install_translation' | 'remove_translation', args: { id?: string } = {}): Promise<T> {
+  if (await inTauri()) return (await invokeFn!(cmd, args)) as T
+  const route = { translation_catalog: ['GET', 'catalog'], installed_translations: ['GET', 'installed'], install_translation: ['POST', 'install'], remove_translation: ['POST', 'remove'] } as const
+  const [method, path] = route[cmd]
+  return await $fetch<T>(`/api/translations/${path}`, { method, body: method === 'POST' ? args : undefined })
+}
+
+/**
+ * The reader's current translation. The list is the translations built into bible.db plus any the user has
+ * downloaded (see packs.rs). Falls back to the WEB if the chosen one is not available (for example, was removed).
+ */
 export function useTranslation() {
   const { prefs, setPrefs } = useUserData()
   const list = useState<TranslationInfo[]>('translations', () => [])
+  const loaded = useState('translations-loaded', () => false)
   const id = computed(() => (list.value.some((t) => t.id === prefs.value.translation) ? prefs.value.translation : TRANSLATION))
   const info = computed(() => list.value.find((t) => t.id === id.value) ?? null)
-  async function load() {
-    if (list.value.length) return
-    const rows = await query<TranslationInfo>('sources')
-    list.value = rows.filter((r) => r.kind === 'translation')
+  /** Lookups that join the original-language words or cross-references need text from bible.db, so downloaded
+   *  translations borrow the WEB's text there. */
+  const lookupId = computed(() => (info.value?.pack ? TRANSLATION : id.value))
+  async function refresh() {
+    const built = (await query<TranslationInfo>('sources')).filter((r) => r.kind === 'translation')
+    let packs: TranslationInfo[] = []
+    try { packs = (await translationCommand<TranslationInfo[]>('installed_translations')).map((p) => ({ ...p, pack: true })) } catch { /* no packs available in this environment */ }
+    list.value = [...built, ...packs]
+    loaded.value = true
   }
-  return { id, info, list, load, set: (next: string) => setPrefs({ translation: next }) }
+  async function load() {
+    if (!loaded.value) await refresh()
+  }
+  return { id, info, list, lookupId, load, refresh, set: (next: string) => setPrefs({ translation: next }) }
 }

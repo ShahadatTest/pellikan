@@ -35,7 +35,7 @@ function submit() {
       <form class="mt-2" @submit.prevent="submit">
         <textarea
           v-model="draft" rows="2" placeholder="Write a note on this verse…" aria-label="Note text"
-          class="w-full resize-none rounded-lg border border-line bg-bg px-3 py-2 text-sm outline-none placeholder:text-faint focus:border-accent"
+          class="w-full resize-none rounded-lg border border-line bg-bg px-3 py-2 text-base outline-none placeholder:text-faint md:text-sm focus:border-accent"
           @keydown.meta.enter.prevent="submit" @keydown.ctrl.enter.prevent="submit"
         />
         <button type="submit" :disabled="!draft.trim()" class="mt-1.5 rounded-md bg-accent px-3 py-1 text-sm font-medium text-accent-fg disabled:opacity-40">Add note</button>

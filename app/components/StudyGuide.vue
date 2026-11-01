@@ -7,6 +7,8 @@ interface Heading { before_verse: number; kind: string; text: string }
 interface Note { verse: number; seq: number; kind: string; text: string }
 
 const props = defineProps<{
+  bookId: number
+  verse: number | null
   bookName: string
   chapter: number
   verseCount: number
@@ -72,8 +74,9 @@ const footnotes = computed(() => props.notes.filter((n) => n.kind !== 'xref').le
     </div>
 
     <div v-else-if="tab === 'xref'" class="text-sm">
-      <p v-if="!xrefs.length" class="text-muted">This translation has no cross-references for this chapter.</p>
-      <ul v-else class="space-y-1.5">
+      <CrossRefs :book-id="bookId" :chapter="chapter" :verse="verse" />
+      <h3 v-if="xrefs.length" class="mb-1 mt-5 text-xs font-semibold uppercase tracking-wider text-faint">In this translation</h3>
+      <ul v-if="xrefs.length" class="space-y-1.5">
         <li v-for="(x, i) in xrefs" :key="i" class="flex items-baseline gap-2">
           <button type="button" class="w-6 shrink-0 text-right text-xs text-faint hover:text-fg" :aria-label="`Go to verse ${x.verse}`" @click="emit('goto', x.verse)">{{ x.verse }}</button>
           <NuxtLink v-if="x.to" :to="x.to" class="inline-flex items-center gap-1 text-accent underline-offset-2 hover:underline">{{ x.text }}<ExternalLink class="size-3" aria-hidden="true" /></NuxtLink>

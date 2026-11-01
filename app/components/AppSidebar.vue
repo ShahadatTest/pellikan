@@ -1,20 +1,10 @@
 <script setup lang="ts">
-import { House, Library, Search, NotebookPen, Bookmark } from 'lucide-vue-next'
-
 const route = useRoute()
-const lastRead = useState<string>('last-read', () => DEFAULT_PATH)
-
-const items = computed(() => [
-  { label: 'Home', to: lastRead.value, icon: House, active: route.path.startsWith('/read') },
-  { label: 'Library', to: '/library', icon: Library, active: route.path === '/library' },
-  { label: 'Search', to: '/search', icon: Search, active: route.path === '/search' },
-  { label: 'Notes', to: '/notes', icon: NotebookPen, active: route.path === '/notes' },
-  { label: 'Highlights', to: '/highlights', icon: Bookmark, active: route.path === '/highlights' },
-])
+const items = useNavItems()
 </script>
 
 <template>
-  <aside data-chrome class="flex h-full w-60 shrink-0 flex-col border-r border-line bg-rail px-3 pb-4 pt-5" aria-label="Primary">
+  <aside data-chrome class="hidden h-full w-60 shrink-0 flex-col md:flex border-r border-line bg-rail px-3 pb-4 pt-5" aria-label="Primary">
     <NuxtLink to="/" class="mb-6 flex items-center gap-3 px-2" aria-label="Pellikan home">
       <img src="/pellikan-mark-dark.svg" alt="" width="44" height="44" class="hidden size-11 dark:block" />
       <img src="/pellikan-mark.svg" alt="" width="44" height="44" class="block size-11 dark:hidden" />

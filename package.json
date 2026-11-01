@@ -18,6 +18,8 @@
     "tauri:build": "tauri build",
     "data:fetch": "node --disable-warning=ExperimentalWarning data/scripts/fetch.mjs",
     "data:build": "node --disable-warning=ExperimentalWarning data/scripts/build-db.mjs",
+    "data:build:release": "node --disable-warning=ExperimentalWarning data/scripts/build-db.mjs --no-esv",
+    "data:packs": "node --disable-warning=ExperimentalWarning data/scripts/build-packs.mjs",
     "data:check": "node --disable-warning=ExperimentalWarning data/scripts/check-db.mjs",
     "data": "npm run data:fetch && npm run data:build && npm run data:check",
     "test": "node --disable-warning=ExperimentalWarning --test \"data/scripts/**/*.test.mjs\" \"shared/**/*.test.mjs\""

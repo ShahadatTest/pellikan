@@ -9,8 +9,8 @@ useHead({ title: 'Notes · Pellikan' })
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto p-4">
-    <div class="mx-auto max-w-3xl rounded-xl border border-line bg-surface px-6 py-6">
+  <div class="h-full overflow-y-auto p-2 md:p-4">
+    <div class="mx-auto max-w-3xl rounded-xl border border-line bg-surface px-4 py-5 md:px-6 md:py-6">
       <h1 class="font-reading text-3xl font-semibold">Notes</h1>
       <p v-if="!sorted.length" class="mt-4 text-muted">No notes yet. Select a verse while reading and write one in the Notes panel.</p>
       <ul v-else class="mt-4 space-y-3">

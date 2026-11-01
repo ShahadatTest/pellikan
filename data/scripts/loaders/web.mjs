@@ -10,16 +10,22 @@ import { BOOK_BY_USFM } from '../../../shared/books.ts'
 
 const JESUS = 1
 const NOTE = 2
+const SUPPLIED = 4 // words the translators added for sense (\add): shown in italics, as in the KJV and ASV
 
 // Block-level markers that begin a new paragraph / line. Value = is it poetry?
-const BLOCKS = { p: false, m: false, mi: false, pi1: false, pi2: false, li1: false, li2: false, q1: true, q2: true, q3: true }
+const BLOCKS = {
+  p: false, m: false, mi: false, pi1: false, pi2: false, pmo: false, pc: false, li1: false, li2: false,
+  q1: true, q2: true, q3: true, qc: true, qr: true,
+}
 // Markers that carry no scripture text we keep.
-const IGNORED = new Set(['id', 'ide', 'h', 'toc1', 'toc2', 'toc3', 'mt1', 'mt2', 'mt3', 'cl', 'b', 'nb'])
-const HEADINGS = { ms1: 'ms', d: 'd', sp: 'sp' }
+// r / mr are parallel-passage references (BSB), ip / ib / is1 are introductions (ASV), mt2-4 are title lines.
+const IGNORED = new Set(['id', 'ide', 'h', 'toc1', 'toc2', 'toc3', 'mt1', 'mt2', 'mt3', 'mt4', 'cl', 'b', 'nb', 'r', 'mr', 'ip', 'ib', 'is1'])
+// s1 / s2 are section headings (BSB, KJV). qa is an acrostic heading such as the Hebrew letters in Psalm 119.
+const HEADINGS = { ms1: 'ms', s1: 'ms', s2: 'ms', d: 'd', sp: 'sp', qa: 'ac' }
 
 function cleanNote(body) {
   return body
-    .replace(/^\s*[+\-?*]\s+/, '') // caller
+    .replace(/^\s*[+\-?*\u00b0]\s+/, '') // caller (Darby uses a degree sign)
     .replace(/\\fr\s+[^\\]*/, '') // "1:1 " origin reference
     .replace(/\\xo\s+[^\\]*/, '') // cross-reference origin
     .replace(/\\\+?[a-z]+\d?\*?/g, '') // remaining inline markers; their text stays
@@ -35,9 +41,12 @@ function cleanNote(body) {
 function parseInline(s, state, notes) {
   const tokens = []
   let buf = ''
+  const flags = () => (state.jesus ? JESUS : 0) | (state.add ? SUPPLIED : 0)
   const flush = () => {
     if (buf) {
-      tokens.push([buf, null, state.jesus ? JESUS : 0])
+      // The KJV marks paragraph starts with a pilcrow; the paragraph break is already carried by the \p marker.
+      const text = buf.replace(/\u00b6\s*/g, '')
+      if (text) tokens.push([text, null, flags()])
       buf = ''
     }
   }
@@ -64,7 +73,7 @@ function parseInline(s, state, notes) {
       const word = bar < 0 ? inner : inner.slice(0, bar)
       const strong = bar < 0 ? null : (/strong="([^"]+)"/.exec(inner.slice(bar)) ?? [])[1] ?? null
       flush()
-      tokens.push([word, strong, state.jesus ? JESUS : 0])
+      tokens.push([word, strong, flags()])
       next = next + end + (s.slice(next + end).match(/^\\\+?w\*/)?.[0].length ?? 0)
     } else if ((name === 'f' || name === 'x') && !closing) {
       const close = `\\${name}*`
@@ -77,6 +86,10 @@ function parseInline(s, state, notes) {
         tokens.push(['', null, NOTE, notes.length])
       }
       next = end + close.length
+    } else if (name === 'add') {
+      flush()
+      state.add = !closing
+      if (!closing && s[next] === ' ') next++
     } else if (name === 'wj') {
       flush()
       state.jesus = !closing
@@ -118,7 +131,7 @@ export function parseUsfmBook(usfm, label = 'book') {
   const verses = []
   const headings = []
   const notes = []
-  const state = { jesus: false }
+  const state = { jesus: false, add: false }
 
   let chapter = 0
   let cur = null // verse being built
@@ -193,8 +206,9 @@ export function parseUsfmBook(usfm, label = 'book') {
 }
 
 /** Reads the WEB zip and inserts the 66 canon books (the deuterocanon files in the zip are skipped). */
-export async function loadWeb(db, { zipPath, sourceId = 'WEB', log = () => {} }) {
+export async function loadWeb(db, { zipPath, sourceId = 'WEB', fileId = 'eng-web', log = () => {} }) {
   const files = unzipSync(new Uint8Array(await readFile(zipPath)))
+  const fileRe = new RegExp(`^\\d+-([A-Z0-9]{3})${fileId.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&')}\\.usfm$`)
   const insVerse = db.prepare(
     'INSERT INTO verses (translation_id, book_id, chapter, verse, text, tokens, para, poetry) VALUES (?,?,?,?,?,?,?,?)',
   )
@@ -211,7 +225,7 @@ export async function loadWeb(db, { zipPath, sourceId = 'WEB', log = () => {} })
   db.exec('BEGIN')
   try {
     for (const name of Object.keys(files).sort()) {
-      const m = /^\d+-([A-Z0-9]{3})eng-web\.usfm$/.exec(name)
+      const m = fileRe.exec(name)
       if (!m) continue
       const book = BOOK_BY_USFM[m[1]]
       if (!book) {
@@ -236,6 +250,6 @@ export async function loadWeb(db, { zipPath, sourceId = 'WEB', log = () => {} })
     db.exec('ROLLBACK')
     throw err
   }
-  log(`WEB: ${stats.books} books, ${stats.verses} verses, ${stats.taggedWords} Strong's-tagged words, ${stats.notes} notes (skipped non-canon: ${skipped.length ? skipped.join(' ') : 'none'})`)
+  log(`${sourceId}: ${stats.books} books, ${stats.verses} verses, ${stats.taggedWords} Strong's-tagged words, ${stats.notes} notes (skipped non-canon: ${skipped.length ? skipped.join(' ') : 'none'})`)
   return { stats, chapters }
 }

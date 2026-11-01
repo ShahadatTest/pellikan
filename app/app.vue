@@ -21,7 +21,7 @@ watch(() => route.fullPath, (p) => { if (p !== '/') sync(p) })
 </script>
 
 <template>
-  <div class="flex h-full">
+  <div class="flex h-full pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
     <AppSidebar />
     <div class="flex min-w-0 flex-1 flex-col">
       <TopBar />
@@ -29,6 +29,7 @@ watch(() => route.fullPath, (p) => { if (p !== '/') sync(p) })
       <main class="min-h-0 flex-1 border-t border-line">
         <NuxtPage />
       </main>
+      <BottomNav />
     </div>
     <CommandPalette />
   </div>

@@ -15,6 +15,48 @@ I am not a lawyer. Verify each license against the upstream project before you d
 | Hebrew lemmas and morphology | Open Scriptures Hebrew Bible | CC BY 4.0 | Attribution required. |
 | Greek text | SBL Greek New Testament | CC BY 4.0 per ebible.org | The MorphGNT README still cites the older SBLGNT EULA. Confirm the current terms before shipping. |
 | Greek morphology and lemmas | MorphGNT | CC BY-SA 3.0 | ShareAlike. See below. |
+| English text (bundled) | Berean Standard Bible (ebible.org) | Public domain | Dedicated to the public domain by BSB Publishing, LLC. Omits some verses the critical Greek text omits, so it has about 16 fewer verses than the KJV. |
+| English text (bundled) | King James Version, 1769 text with Strong's numbers (ebible.org) | Public domain outside the UK | Crown letters patent apply to printing and importing printed copies in the UK. Pellikan is software, not a printer, but check before distributing in the UK. |
+| English text (on demand) | American Standard Version, Young's Literal Translation, Darby (ebible.org) | Public domain | Not in `bible.db`. Downloaded by the app into the app data folder. See "Optional translations". |
+| Lexicon | Strong's Hebrew, from the Open Scriptures Hebrew Lexicon | Strong's text public domain; encoding CC BY 4.0 | Credit "the Open Scriptures Hebrew Bible Project". |
+| Lexicon | Brown-Driver-Briggs, same project | BDB text public domain; encoding CC BY 4.0 | The encoding is a work in progress; some entries are incomplete. Linked to Strong's numbers through the project's LexicalIndex.xml. |
+| Lexicon | Strong's Greek (Open Scriptures JSON of Ulrik Petersen's XML) | CC BY-SA | **ShareAlike**, like MorphGNT. The 1890 text underneath is public domain. |
+| Lexicon | Thayer's Greek-English Lexicon (nigelmsipa's digitization) | Public domain text; dataset CC0 | **OCR-derived.** One maintainer, one commit, pinned in `fetch.mjs`. Expect transcription errors. See below. |
+| Dictionaries | Easton's (1897) and Smith's (1884) Bible Dictionaries, CrossWire modules | Public domain | Read from the SWORD module files directly (no libsword). |
+| Commentary | Matthew Henry, CrossWire MHC module | Public domain | The Bible text quoted before each section was removed. |
+| Cross-references | Treasury of Scripture Knowledge, CrossWire TSK module | Public domain | Parsed from the TSK's abbreviated notation by Pellikan. See below. |
+| Cross-references | OpenBible.info | CC BY | Community votes. Only references with at least one positive vote are kept. Verify the license version before distributing. |
+
+## Canonical verse numbering
+
+Pellikan numbers verses the English (KJV) way, with the 66 OSIS book ids. The KJV is the reference versification
+(the TSK, Matthew Henry and OpenBible are indexed by it) and every bundled translation is checked against it at
+build time: same chapters, and a log line for any chapter that ends on a different verse. Hebrew verse numbers are
+mapped to English through `versification_map`. Anything that numbers verses differently (Psalm titles, Malachi 3-4,
+the Daniel additions, the Catholic canon, Septuagint psalm numbering) needs a mapping table to this scheme before it
+is added. Do not add a translation without one. The deuterocanon is not loaded.
+
+## Optional translations (downloaded on demand)
+
+ASV, YLT and Darby are not in `bible.db`. `data/scripts/translations.mjs` lists them with `bundled: false`. How it works:
+
+1. `npm run data:fetch -- --packs` downloads their source zips from ebible.org once and caches them in `data/sources/`.
+2. `npm run data:packs` turns each into a pack: a gzipped SQLite file with the same schema as `bible.db` holding one
+   translation, plus `manifest.json` listing every pack with its SHA-256. Output is in `data/build/packs/` (3 to 7 MB each).
+   The script refuses a pack whose chapter structure differs from the canonical scheme.
+3. **You publish that folder to a public HTTPS location.** The app reads the manifest from
+   `https://github.com/philorien/pellikan/releases/download/packs/manifest.json` by default, or from the
+   `PELLIKAN_PACKS_URL` environment variable (at build time or run time; plain `http` is accepted only for localhost).
+   **That default URL does not work today:** nothing is published there, and release assets of a private repository
+   cannot be downloaded without credentials. Make the repo public, publish the packs from a public repo, or host them
+   elsewhere, then set the URL.
+4. The app downloads a pack only from the manifest's host, never from ebible.org. It checks the SHA-256, unpacks to a
+   temporary file, validates it (integrity check, exactly one translation, the right id), and renames it into
+   `<app data>/translations/<ID>.db`. A failed install leaves nothing behind. Removing a translation deletes its file.
+
+Reader and search queries for a downloaded translation run on that translation's own database. Queries that join the
+original-language words, lexicons or cross-references (word occurrences, cross-reference text) use the WEB's text when a
+downloaded translation is selected, because those tables live in `bible.db`.
 
 ## The ESV (optional, local only)
 
@@ -27,6 +69,8 @@ redistribution.
 
 How the repo handles that:
 
+- Release builds must not contain it: run `npm run data:build:release`, which passes `--no-esv`. The installer bundles
+  `data/build/bible.db`, so a plain `npm run data:build` with the epub present would ship the ESV.
 - The epub is never committed or downloaded. Put your own copy at `data/sources/esv/esv_classic_reference_bible_4.epub`
   (git-ignored), then `npm run data:build`. Without the file the build skips the ESV and everything else works.
 - `data/build/bible.db` is git-ignored too, so the ESV text does not enter the repo. A Tauri bundle built while the
@@ -50,6 +94,24 @@ SWORD modules and the `libsword` library are GPL. Pellikan does not link or ship
 apply here. If you ever add SWORD module import, keep that code behind a clear boundary and re-check the license.
 
 ## Known data issues (measured, not guessed)
+
+**0. The WEB puts the end of Romans in a different place.** The WEB follows the Majority Text and places the doxology at
+Romans 14:24-26, so Romans 14 ends on verse 26 (KJV 23) and Romans 16 on verse 25 (KJV 27). The build prints this.
+Cross-references and commentary into those verses line up with the KJV and BSB, not the WEB.
+
+**0a. Thayer's is OCR-derived.** 191 ids appear twice because the dataset splits long entries over two records; the second
+is merged into the first. 5,255 of 5,916 entries are linked to a Strong's number (3,573 by the dataset's own tagging, the
+rest by matching the headword to exactly one Strong's lemma). The rest are findable only by headword. Spot-check before
+quoting it.
+
+**0b. TSK parsing is heuristic.** The TSK writes "Joh 1:1-3; 15" and expects the reader to know 15 means John 1:15. The
+parser follows the usual convention (a bare number is a verse of the last chapter named) and a book plus a bare number
+is a whole chapter. 46 of about 382,000 items were skipped as unparseable or out of range. The rest are not verified
+one by one.
+
+**0c. Greek words get Strong's numbers by lemma matching.** MorphGNT has no Strong's numbers. A word is tagged when its
+accent-folded lemma matches exactly one Strong's Greek entry: 94% of the 137,554 words. Words whose lemma is ambiguous
+once accents are removed stay untagged rather than guessed.
 
 **1. The WEB's Strong's numbers on English words are not trustworthy in the Old Testament.** The tags in the
 eBible USFM are not aligned to the word they sit on. Measured against OSHB: "God" (Elohim, H430) is tagged H3068

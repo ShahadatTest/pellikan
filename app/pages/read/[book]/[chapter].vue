@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronLeft, ChevronRight, Printer, Maximize2, Minimize2 } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, Printer, Maximize2, Minimize2, PanelBottomOpen, X } from 'lucide-vue-next'
 import { BOOKS, BOOK_BY_OSIS } from '~~/shared/books'
 import type { Word } from '~/utils/types'
 
@@ -12,6 +12,12 @@ const { prefs, highlights, setPrefs } = useUserData()
 const lastRead = useState<string>('last-read', () => DEFAULT_PATH)
 const translation = useTranslation()
 await translation.load()
+
+function onTranslationChange(e: Event) {
+  const el = e.target as HTMLSelectElement
+  if (el.value === '__more') { el.value = translation.id.value; navigateTo('/library#translations'); return }
+  translation.set(el.value)
+}
 
 const chapterCounts = useState<Record<number, number>>('chapters', () => ({}))
 if (!Object.keys(chapterCounts.value).length) {
@@ -58,6 +64,10 @@ function pickNote(verse: number, seq: number) {
 }
 function pickWord(w: Word) { pickedWord.value = w; guideTab.value = 'word' }
 
+// Phones: the study panels live in a bottom sheet instead of beside the text.
+const sheet = ref(false)
+watch(() => route.fullPath, () => { sheet.value = false })
+
 function printChapter() { window.print() }
 function scrollToVerse(v: number) { document.getElementById(`v${v}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }) }
 
@@ -91,36 +101,43 @@ useHead(() => ({ title: valid.value ? `${book.value!.name} ${chapter.value} · P
 </script>
 
 <template>
-  <div class="flex h-full flex-col gap-4 p-4">
-    <div class="grid min-h-0 flex-1 gap-4" :class="prefs.focus ? 'grid-cols-1' : 'grid-cols-[minmax(0,1fr)_21rem]'">
+  <div class="h-full p-2 md:p-4">
+    <div
+      class="grid h-full min-h-0 grid-cols-1 gap-4"
+      :class="prefs.focus ? 'md:grid-rows-1' : 'md:grid-cols-[minmax(0,1fr)_21rem] md:grid-rows-[minmax(0,1fr)_13rem]'"
+    >
       <!-- Reader -->
       <section class="flex min-h-0 flex-col overflow-hidden rounded-xl border border-line bg-surface" aria-label="Reader">
-        <div class="flex items-center gap-2 border-b border-line px-3 py-2" data-chrome>
+        <div class="flex items-center gap-1 border-b border-line px-2 py-2 md:gap-2 md:px-3" data-chrome>
           <select
             v-if="translation.list.value.length > 1"
             :value="translation.id.value"
             class="rounded-md bg-surface-2 px-2 py-1 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label="Translation"
-            @change="translation.set(($event.target as HTMLSelectElement).value)"
+            @change="onTranslationChange($event)"
           >
             <option v-for="t in translation.list.value" :key="t.id" :value="t.id">{{ t.id }}</option>
+            <option value="__more">More translations…</option>
           </select>
-          <span v-else class="rounded-md bg-surface-2 px-2.5 py-1 text-sm font-medium" title="Only one translation is bundled">{{ translation.id.value }}</span>
+          <NuxtLink v-else to="/library#translations" class="rounded-md bg-surface-2 px-2.5 py-1 text-sm font-medium hover:text-accent" title="Get more translations">{{ translation.id.value }}</NuxtLink>
           <PassagePicker :book="book" :chapter="chapter" />
           <div class="ml-auto flex items-center gap-0.5 text-muted">
-            <NuxtLink v-if="prev" :to="`/read/${prev.osis}/${prev.ch}`" class="grid size-9 place-items-center rounded-lg hover:bg-surface-2 hover:text-fg" aria-label="Previous chapter"><ChevronLeft class="size-5" /></NuxtLink>
-            <NuxtLink v-if="next" :to="`/read/${next.osis}/${next.ch}`" class="grid size-9 place-items-center rounded-lg hover:bg-surface-2 hover:text-fg" aria-label="Next chapter"><ChevronRight class="size-5" /></NuxtLink>
-            <span class="mx-1 h-5 w-px bg-line" aria-hidden="true" />
-            <button type="button" class="grid size-9 place-items-center rounded-lg text-sm hover:bg-surface-2 hover:text-fg disabled:opacity-30" :disabled="prefs.fontSize <= 16" aria-label="Smaller text" @click="setPrefs({ fontSize: prefs.fontSize - 1 })">A&minus;</button>
-            <button type="button" class="grid size-9 place-items-center rounded-lg text-base hover:bg-surface-2 hover:text-fg disabled:opacity-30" :disabled="prefs.fontSize >= 30" aria-label="Larger text" @click="setPrefs({ fontSize: prefs.fontSize + 1 })">A+</button>
-            <button type="button" class="grid size-9 place-items-center rounded-lg hover:bg-surface-2 hover:text-fg" aria-label="Print this chapter" @click="printChapter"><Printer class="size-5" /></button>
-            <button type="button" class="grid size-9 place-items-center rounded-lg hover:bg-surface-2 hover:text-fg" :aria-label="prefs.focus ? 'Show side panels' : 'Focus on the text'" :aria-pressed="prefs.focus" @click="setPrefs({ focus: !prefs.focus })">
+            <button v-if="!prefs.focus && valid && data" type="button" class="flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-sm hover:bg-surface-2 hover:text-fg md:hidden" aria-label="Open study panels" :aria-expanded="sheet" @click="sheet = true">
+              <PanelBottomOpen class="size-5" aria-hidden="true" />Study
+            </button>
+            <NuxtLink v-if="prev" :to="`/read/${prev.osis}/${prev.ch}`" class="grid size-10 place-items-center rounded-lg hover:bg-surface-2 hover:text-fg md:size-9" aria-label="Previous chapter"><ChevronLeft class="size-5" /></NuxtLink>
+            <NuxtLink v-if="next" :to="`/read/${next.osis}/${next.ch}`" class="grid size-10 place-items-center rounded-lg hover:bg-surface-2 hover:text-fg md:size-9" aria-label="Next chapter"><ChevronRight class="size-5" /></NuxtLink>
+            <span class="mx-1 hidden h-5 w-px bg-line md:block" aria-hidden="true" />
+            <button type="button" class="hidden size-9 place-items-center rounded-lg text-sm hover:bg-surface-2 hover:text-fg disabled:opacity-30 md:grid" :disabled="prefs.fontSize <= 16" aria-label="Smaller text" @click="setPrefs({ fontSize: prefs.fontSize - 1 })">A&minus;</button>
+            <button type="button" class="hidden size-9 place-items-center rounded-lg text-base hover:bg-surface-2 hover:text-fg disabled:opacity-30 md:grid" :disabled="prefs.fontSize >= 30" aria-label="Larger text" @click="setPrefs({ fontSize: prefs.fontSize + 1 })">A+</button>
+            <button type="button" class="hidden size-9 place-items-center rounded-lg hover:bg-surface-2 hover:text-fg md:grid" aria-label="Print this chapter" @click="printChapter"><Printer class="size-5" /></button>
+            <button type="button" class="hidden size-9 place-items-center rounded-lg hover:bg-surface-2 hover:text-fg md:grid" :aria-label="prefs.focus ? 'Show side panels' : 'Focus on the text'" :aria-pressed="prefs.focus" @click="setPrefs({ focus: !prefs.focus })">
               <Minimize2 v-if="prefs.focus" class="size-5" /><Maximize2 v-else class="size-5" />
             </button>
           </div>
         </div>
 
-        <article class="min-h-0 flex-1 overflow-y-auto px-8 py-6">
+        <article class="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-8 md:py-6">
           <div v-if="!valid" class="mx-auto max-w-prose">
             <h1 class="font-reading text-2xl">Passage not found</h1>
             <p class="mt-2 text-muted">
@@ -165,23 +182,36 @@ useHead(() => ({ title: valid.value ? `${book.value!.name} ${chapter.value} · P
         </article>
       </section>
 
-      <!-- Right rail -->
-      <div v-if="!prefs.focus && valid && data" class="flex min-h-0 flex-col gap-4" data-chrome>
-        <StudyGuide
-          v-model:tab="guideTab"
-          :book-name="book!.name" :chapter="chapter" :verse-count="data.verses.length"
-          :headings="data.headings" :notes="data.notes" :footnote="selectedNote" :word="pickedWord"
-          @goto="scrollToVerse"
-        />
-        <NotesPanel :osis="book!.osis" :book-name="book!.name" :chapter="chapter" :verse="selectedVerse" />
+      <!-- Study panels: grid items on desktop (display: contents), a bottom sheet on phones -->
+      <div
+        v-if="!prefs.focus && valid && data"
+        data-chrome
+        :class="sheet
+          ? 'fixed inset-x-0 top-[env(safe-area-inset-top)] bottom-[var(--nav-h)] z-30 flex flex-col bg-bg md:contents'
+          : 'hidden md:contents'"
+        :role="sheet ? 'dialog' : undefined" :aria-label="sheet ? 'Study panels' : undefined" :aria-modal="sheet ? 'true' : undefined"
+      >
+        <div class="flex items-center justify-between border-b border-line px-4 py-2 md:hidden">
+          <h2 class="text-sm font-semibold">Study</h2>
+          <button type="button" class="grid size-10 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-fg" aria-label="Close study panels" @click="sheet = false"><X class="size-5" /></button>
+        </div>
+        <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-3 md:contents">
+          <div class="flex flex-col gap-4 max-md:[&>section]:max-h-[28rem] max-md:[&>section]:flex-none md:col-start-2 md:row-start-1 md:min-h-0">
+            <StudyGuide
+              v-model:tab="guideTab"
+              :book-id="book!.id" :verse="selectedVerse" :book-name="book!.name" :chapter="chapter" :verse-count="data.verses.length"
+              :headings="data.headings" :notes="data.notes" :footnote="selectedNote" :word="pickedWord"
+              @goto="(v: number) => { sheet = false; scrollToVerse(v) }"
+            />
+            <NotesPanel :osis="book!.osis" :book-name="book!.name" :chapter="chapter" :verse="selectedVerse" />
+          </div>
+          <div class="flex flex-col gap-4 max-md:[&>section]:max-h-[28rem] max-md:[&>section]:flex-none md:col-span-2 md:row-start-2 md:grid md:grid-cols-3">
+            <OriginalPanel :words="data.words" :verse="originalVerse" :label="`${book!.name} ${chapter}:${originalVerse}`" :testament="book!.testament" :picked="pickedWord" @pick="pickWord" />
+            <CommentaryPanel :book-id="book!.id" :book-name="book!.name" :chapter="chapter" :verse="selectedVerse" />
+            <LibraryPanel />
+          </div>
+        </div>
       </div>
-    </div>
-
-    <!-- Bottom row -->
-    <div v-if="!prefs.focus && valid && data" class="grid h-52 shrink-0 grid-cols-3 gap-4" data-chrome>
-      <OriginalPanel :words="data.words" :verse="originalVerse" :label="`${book!.name} ${chapter}:${originalVerse}`" :testament="book!.testament" :picked="pickedWord" @pick="pickWord" />
-      <CommentaryPanel />
-      <LibraryPanel />
     </div>
   </div>
 </template>

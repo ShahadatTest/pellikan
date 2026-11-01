@@ -20,7 +20,7 @@ export function tabTitle(path: string): { title: string; kind: 'read' | 'search'
     const q = url.searchParams.get('q')
     return { title: q ? `Search: ${q}` : 'Search', kind: 'search' }
   }
-  const names: Record<string, string> = { '/credits': 'Credits', '/library': 'Library', '/notes': 'Notes', '/highlights': 'Highlights' }
+  const names: Record<string, string> = { '/credits': 'Credits', '/library': 'Library', '/dictionary': 'Dictionary', '/notes': 'Notes', '/highlights': 'Highlights' }
   return { title: names[url.pathname] ?? 'Pellikan', kind: 'page' }
 }
 

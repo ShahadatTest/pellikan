@@ -33,17 +33,17 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDoc))
 
 <template>
   <div ref="root" class="relative" @keydown.esc="open = false">
-    <button type="button" class="flex items-center gap-1.5 rounded-lg px-2 py-1 text-lg font-semibold hover:bg-surface-2" aria-haspopup="dialog" :aria-expanded="open" @click="toggle">
+    <button type="button" class="flex items-center gap-1 whitespace-nowrap rounded-lg px-1.5 py-1 text-base font-semibold hover:bg-surface-2 md:gap-1.5 md:px-2 md:text-lg" aria-haspopup="dialog" :aria-expanded="open" @click="toggle">
       {{ book?.name }} {{ chapter }}<ChevronDown class="size-4 text-muted" aria-hidden="true" />
     </button>
-    <div v-if="open" role="dialog" aria-label="Choose a passage" class="absolute left-0 top-11 z-40 max-h-[26rem] w-[22rem] overflow-y-auto rounded-xl border border-line bg-surface p-3 shadow-2xl">
+    <div v-if="open" role="dialog" aria-label="Choose a passage" class="absolute left-0 top-11 z-40 max-h-[26rem] w-[22rem] overflow-y-auto max-md:fixed max-md:inset-x-3 max-md:top-[8.5rem] max-md:max-h-[calc(100dvh-12rem-var(--nav-h))] max-md:w-auto rounded-xl border border-line bg-surface p-3 shadow-2xl">
       <template v-if="!picked">
         <template v-for="g in groups" :key="g.label">
           <h3 class="px-1 pb-1 pt-2 text-xs font-semibold uppercase tracking-wider text-faint">{{ g.label }}</h3>
           <div class="grid grid-cols-2 gap-0.5">
             <button
               v-for="b in g.books" :key="b.id" type="button"
-              class="rounded-md px-2 py-1 text-left text-sm hover:bg-surface-2"
+              class="rounded-md px-2 py-2 text-left text-sm md:py-1 hover:bg-surface-2"
               :class="b.id === props.book?.id ? 'bg-accent-soft font-medium' : ''"
               @click="pickBook(b)"
             >{{ b.name }}</button>
@@ -56,7 +56,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDoc))
         <div class="grid grid-cols-6 gap-1">
           <button
             v-for="n in chapterCounts[picked.id] ?? 0" :key="n" type="button"
-            class="rounded-md py-1.5 text-sm hover:bg-surface-2"
+            class="rounded-md py-2.5 text-sm hover:bg-surface-2 md:py-1.5"
             :class="picked.id === props.book?.id && n === chapter ? 'bg-accent-soft font-medium' : ''"
             @click="go(picked!, n)"
           >{{ n }}</button>

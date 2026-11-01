@@ -1,6 +1,8 @@
 # AGENTS.md
 
 Guidance for AI coding agents working in Pellikan. Humans: see [README.md](README.md) for setup and status.
+Maintainer workflow, data and licensing rules: [CONTRIBUTING.md](CONTRIBUTING.md). Accessibility rules and known gaps:
+[ACCESSIBILITY.md](ACCESSIBILITY.md). Do not use `text-faint` or `text-brand` for text; they fail contrast.
 
 ## What this is
 
@@ -16,6 +18,7 @@ npm run dev           # browser at localhost:3000, queries served by server/api/
 npm run tauri:dev     # desktop app (needs Rust and Xcode CLT on macOS)
 npm test              # node:test unit tests for data loaders and shared/
 npm run data:check    # database integrity checks
+npm run data:fetch -- --packs && npm run data:packs   # build downloadable translation packs into data/build/packs/
 npm run build         # static site (nuxt generate)
 ```
 
@@ -29,8 +32,10 @@ before the UI shows anything; build it with `npm run data`.
 - `shared/` TypeScript used by both the UI and the data scripts: books, reference parsing, morphology decoding, text.
 - `data/queries/*.sql` every query the app runs. **Single source of truth** for Rust and the dev server.
 - `data/schema/` `bible.sql` (reference DB) and `user.sql` (user DB, idempotent).
-- `data/scripts/` fetch, build, check, and `loaders/` (WEB USFM, OSHB XML, MorphGNT, optional ESV epub).
-- `server/` dev-only API route and DB helper.
+- `data/scripts/` fetch, build, check, `translations.mjs` (translation catalog), and `loaders/`: USFM (WEB, BSB, KJV),
+  OSHB, MorphGNT, optional ESV epub, `sword.mjs` (CrossWire module reader), `lexicon`, `dictionary`, `commentary`,
+  `crossrefs`, `markup`.
+- `server/` dev-only API routes (`/api/query/*`, `/api/translations/*`) and DB/pack helpers.
 - `src-tauri/src/` `db.rs`, `lib.rs`, `main.rs`: opens both DBs, exposes a `query` command.
 - `.agents/skills/` design skills (Impeccable). Not app code.
 
@@ -43,6 +48,18 @@ before the UI shows anything; build it with `npm run data`.
   settings) belongs in `user.db`.
 - **Current reality:** notes, highlights, tabs and prefs are in `localStorage` via `useUserData.ts` and `useTabs.ts`,
   because Rust has no write commands yet. Keep all access behind those composables so migrating is a one-file change.
+- **Canonical verse numbering** is English (KJV) with OSIS book ids. The KJV is the reference versification; every
+  bundled translation is checked against it in `build-db.mjs`. A text that numbers verses differently needs a mapping
+  table first (see DATA_SOURCES.md). Decide this before adding sources, not after.
+- **Bundled vs on demand.** WEB, BSB and KJV ship inside `bible.db`. Other translations are `bundled: false` in
+  `data/scripts/translations.mjs` and are downloaded by the app. Do not make the app fetch from ebible.org at
+  runtime per user: fetch once at build time, cache, and serve prebuilt packs.
+- **Downloaded translations** are packs (one SQLite file each, same schema as `bible.db`, one translation) installed by
+  `src-tauri/src/packs.rs` and mirrored for the browser dev server in `server/utils/packs.ts`. Keep the two in step:
+  same URL rules, same size caps, same validation. Queries listed in `PACK_QUERIES` run on the pack's connection; anything
+  that needs `words`, lexicons or cross-references must stay on `bible.db`. Never add a code path that downloads from
+  ebible.org at runtime.
+- **Release builds** use `npm run data:build:release` (no ESV). A plain build includes the ESV if the epub is present.
 - **References** use canonical book ids 1..66, OSIS ids in routes (`/read/Rom/8`), and English verse numbering.
   Use `shared/books.ts` and `shared/reference.ts`; do not re-implement parsing.
 - **English words are intentionally not clickable.** WEB Strong's tags on English words are unreliable in the OT
@@ -67,5 +84,7 @@ before the UI shows anything; build it with `npm run data`.
 - Data or loader changes: `npm test` and `npm run data:check`.
 - UI changes: run `npm run dev` and exercise the page in a browser. Type checks passing is not the same as the
   feature working.
-- The Tauri shell has never been compiled or run on this project's target Mac. Say so rather than claiming it works.
-- Rust: `cd src-tauri && cargo test` (tests run against the real `bible.db`).
+- The Rust crate compiles and its tests pass on the Mac (with the SDK workaround above). The Tauri window itself has not
+  been launched. Say so rather than claiming it works.
+- Rust: `cd src-tauri && cargo test` (tests run against the real `bible.db`). On this Mac the default macOS 27 SDK fails
+  to link; use `SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk cargo test`.

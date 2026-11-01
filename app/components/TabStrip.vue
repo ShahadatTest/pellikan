@@ -7,7 +7,7 @@ const items = computed(() => tabs.value.map((t) => ({ ...t, ...tabTitle(t.path) 
 </script>
 
 <template>
-  <div data-chrome class="flex items-end gap-1.5 overflow-x-auto px-5 pt-3" role="tablist" aria-label="Open tabs">
+  <div data-chrome class="hidden items-end gap-1.5 overflow-x-auto px-5 pt-3 md:flex" role="tablist" aria-label="Open tabs">
     <div
       v-for="t in items"
       :key="t.id"
