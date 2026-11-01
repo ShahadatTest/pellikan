@@ -1,30 +1,103 @@
 @import 'tailwindcss';
 
+/* Theme is a data attribute on <html> (set by useTheme), so it works the same in the browser and in Tauri. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-reading: 'Charter', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --font-hebrew: 'SBL Hebrew', 'Ezra SIL', 'Times New Roman', serif;
   --font-greek: 'SBL Greek', 'Gentium Plus', 'Palatino Linotype', serif;
-  --color-paper: #fbf9f4;
-  --color-ink: #1f1d1a;
-  --color-accent: #7a4b1e;
 }
 
-:root {
-  color-scheme: light dark;
+/* Semantic tokens. Components use these (bg-surface, text-muted, ...) and never a raw colour,
+   so a theme is one block of variables. Dark is the primary design; light is the same hues, inverted. */
+:root,
+[data-theme='light'] {
+  --bg: #f4f1e8;
+  --rail: #ebe7da;
+  --surface: #fbf9f3;
+  --surface-2: #efebdf;
+  --line: #d9d3c2;
+  --fg: #1d221e;
+  --muted: #5f675f;
+  --faint: #8a9088;
+  --accent: #1f6b3a;
+  --accent-soft: #dcead9;
+  --accent-fg: #ffffff;
+  --brand: #c97410;
+  --sel: #d9e9d3;
+  --jesus: #9b2c2c;
+  --hl-yellow: #f3e3a0;
+  --hl-green: #cfe6c6;
+  --hl-blue: #cfe0ee;
+  --hl-rose: #f1d0d4;
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --bg: #0d1411;
+  --rail: #0a100d;
+  --surface: #121b17;
+  --surface-2: #1a2621;
+  --line: #24332c;
+  --fg: #e9e5d8;
+  --muted: #a4aa9f;
+  --faint: #6f7a72;
+  --accent: #6fbf7f;
+  --accent-soft: #1c3a2a;
+  --accent-fg: #0a100d;
+  --brand: #e8912d;
+  --sel: #1d3a2a;
+  --jesus: #e9a3a3;
+  --hl-yellow: #4a4220;
+  --hl-green: #1f4a2c;
+  --hl-blue: #1f3a52;
+  --hl-rose: #4d2a31;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-rail: var(--rail);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-fg: var(--accent-fg);
+  --color-brand: var(--brand);
+  --color-sel: var(--sel);
+  --color-jesus: var(--jesus);
 }
 
 html, body, #__nuxt { height: 100%; }
 
 body {
-  background: var(--color-paper);
-  color: var(--color-ink);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
-@media (prefers-color-scheme: dark) {
-  body { background: #16140f; color: #ece7dc; }
+/* Slim scrollbars that stay out of the way inside panels. */
+* { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+mark.hit { background: color-mix(in srgb, var(--brand) 35%, transparent); color: inherit; border-radius: 2px; }
+
+@media print {
+  body { overflow: visible; background: #fff; color: #000; }
+  [data-chrome] { display: none !important; }
+  /* Let the chapter flow across pages instead of clipping to the window. */
+  * { overflow: visible !important; height: auto !important; }
 }
 
-mark.hit { background: color-mix(in srgb, var(--color-accent) 25%, transparent); color: inherit; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

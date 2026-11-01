@@ -1,6 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
 
-// Scriptorium is a single-page app: Tauri loads the generated static files, so there is no server rendering.
+// Pellikan is a single-page app: Tauri loads the generated static files, so there is no server rendering.
 // In `nuxt dev` (plain browser) the same queries are served by server/api/query/[name].post.ts.
 export default defineNuxtConfig({
   compatibilityDate: '2026-01-01',
@@ -12,7 +12,7 @@ export default defineNuxtConfig({
   telemetry: false,
   app: {
     head: {
-      title: 'Scriptorium',
+      title: 'Pellikan',
       meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
     },
   },

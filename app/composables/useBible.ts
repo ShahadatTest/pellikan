@@ -1,5 +1,6 @@
 import { BOOKS, BOOK_BY_OSIS } from '~~/shared/books'
 
+/** The translation every build contains. Others (the ESV, when the epub was supplied) are optional. */
 export const TRANSLATION = 'WEB'
 
 type Params = Record<string, string | number | null>
@@ -23,4 +24,20 @@ export async function query<T = Record<string, unknown>>(name: string, params: P
 
 export function useBooks() {
   return { BOOKS, BOOK_BY_OSIS }
+}
+
+export interface TranslationInfo { id: string; name: string; kind: string; attribution: string }
+
+/** The reader's current translation, chosen from whatever this bible.db contains. Falls back to the WEB. */
+export function useTranslation() {
+  const { prefs, setPrefs } = useUserData()
+  const list = useState<TranslationInfo[]>('translations', () => [])
+  const id = computed(() => (list.value.some((t) => t.id === prefs.value.translation) ? prefs.value.translation : TRANSLATION))
+  const info = computed(() => list.value.find((t) => t.id === id.value) ?? null)
+  async function load() {
+    if (list.value.length) return
+    const rows = await query<TranslationInfo>('sources')
+    list.value = rows.filter((r) => r.kind === 'translation')
+  }
+  return { id, info, list, load, set: (next: string) => setPrefs({ translation: next }) }
 }

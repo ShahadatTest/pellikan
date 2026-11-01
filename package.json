@@ -1,5 +1,5 @@
 {
-  "name": "scriptorium",
+  "name": "pellikan",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.4",
+    "lucide-vue-next": "^1.0.0",
     "nuxt": "^4.6.3",
     "vue": "^3.5.44"
   },

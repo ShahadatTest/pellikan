@@ -1,15 +1,20 @@
-# Scriptorium
+<p align="center">
+  <img src="public/pellikan.svg" alt="Pellikan logo" width="240">
+</p>
 
-A modern, local-first Bible study app in the spirit of SWORD and Logos. Open source. "Scriptorium" is a working
-name and can change.
+# Pellikan
 
-**Status: early scaffold.** The reader, original-language word study, full-text search and credits page work. Uploads
-and AI-assisted search are designed for but not built yet. See [What works](#what-works) for what has been tested.
+A modern, local-first Bible study app in the spirit of SWORD and Logos. Open source.
+
+**Status: early, pre-Mac-verification.** The reader, tabs, original-language word study, study guide, notes and
+highlights, full-text search, command palette, themes and credits page exist. Commentaries, a lexicon, imports and
+AI-assisted search are designed for but not built yet. See [What works](#what-works) for what has been tested.
 
 ## Stack
 
 - **Tauri 2** (Rust + the system web view) for the desktop shell
 - **Nuxt 4** as a single-page app (`ssr: false`), **Tailwind v4** for styling
+- **lucide-vue-next** for icons
 - **SQLite** with FTS5 for all data, bundled into the app (`rusqlite`, bundled build)
 - Two database files: `bible.db` (reference text, read-only, ships with the app) and `user.db` (notes, highlights,
   imported books; created in the app data folder). Updating the Bible data can never touch user data.
@@ -28,6 +33,19 @@ database layer are tested. **The Tauri shell itself has not been compiled yet**,
 webkit2gtk, and it has not been run on a Mac. Expect a first-run fix or two. Running it locally needs no Apple
 account. Distributing it to other people does: you need an Apple Developer ID to sign and notarize, or macOS will warn
 users away from the app.
+
+## Features
+
+- **Reader** with a passage picker, red-letter toggle, adjustable font size, and light, dark or system theme.
+- **Browser-style tabs.** A tab is a route; the tab strip and the active route stay in sync, and tabs persist.
+- **Command palette** to jump to a reference (`Rom 8:28`), a book, or a search.
+- **Original-language panel:** Hebrew, Aramaic and Greek words for the selected verse with decoded morphology, plus
+  a word study that lists other occurrences of the lexeme.
+- **Study guide:** section headings, footnotes and cross-references for the chapter.
+- **Notes and highlights** per verse (four colors), with `/notes` and `/highlights` overview pages.
+- **Full-text search** (FTS5) with highlighted matches.
+- **Optional ESV** if you supply your own epub (see [DATA_SOURCES.md](DATA_SOURCES.md)). The WEB is the default text.
+- **Library and Commentary panels** exist as placeholders; the Library page currently lists installed texts only.
 
 ## Setup
 
@@ -49,13 +67,20 @@ Other commands: `npm test` (unit tests), `npm run data:check` (database checks),
 ## Layout
 
 ```
-app/                   Nuxt UI: reader, search, credits, study panel
+app/                   Nuxt UI: pages (read, search, notes, highlights, library, credits), components, composables
 shared/                Code used by both the data scripts and the UI: books, references, morphology decoding
 data/queries/*.sql     Every query the app runs. One copy, used by Rust and by the dev server
 data/schema/           bible.sql (reference DB) and user.sql (user DB, idempotent)
 data/scripts/          fetch, build, check, and the loaders (WEB USFM, OSHB XML, MorphGNT)
+server/                Dev-only API route that runs the same named queries in a browser
 src-tauri/             Rust shell: opens the databases, runs named queries
 ```
+
+Notes, highlights, tabs and reading preferences currently live in the webview's `localStorage`, all behind
+`app/composables/useUserData.ts` and `useTabs.ts`. `user.db` has the schema but the Rust side has no write commands
+yet, so these do not reach it. Clearing app data clears them.
+
+See [AGENTS.md](AGENTS.md) for conventions if you (or an AI agent) are contributing.
 
 The UI never sends SQL. It names a query; Rust (or the dev server) runs the matching file from `data/queries/`.
 
@@ -66,10 +91,11 @@ Tested:
 - 17 Node unit tests and 7 Rust tests for the database layer (against the real database).
 - `npm run data:check`: integrity, every chapter ending on the same verse in Hebrew and English, search ranking,
   every query preparing, `user.sql` applying twice.
-- The UI in a real browser (Chromium): reading, jump bar (`Rom 8:28`), verse study panel with decoded morphology,
-  lexeme occurrences, footnotes, search with highlighting, credits.
+- The earlier UI in a real browser (Chromium): reading, jump bar (`Rom 8:28`), verse study panel with decoded
+  morphology, lexeme occurrences, footnotes, search with highlighting, credits.
 
-Not yet verified: the Tauri window, macOS, dark mode appearance, narrow window sizes, accessibility beyond basics.
+Not yet verified: the Tauri window, macOS, and the newer UI (tabs, command palette, notes and highlights, themes,
+sidebar layout). Also unchecked: dark mode appearance, narrow window sizes, accessibility beyond basics.
 
 ## Known limitations
 
@@ -84,8 +110,8 @@ See [DATA_SOURCES.md](DATA_SOURCES.md) for the measured details. The ones that m
 
 ## Roadmap
 
-1. Lexicon loader (Strong's definitions and glosses, license check first)
-2. Highlights, notes and bookmarks (schema is ready in `user.sql`)
+1. Commentaries and a lexicon loader (Strong's definitions and glosses, license check first for both)
+2. Move notes, highlights and bookmarks from `localStorage` into `user.db` (schema is ready in `user.sql`; needs Rust write commands)
 3. Imports: EPUB, PDF, DOCX and plain text into `user.db`, with scripture references found and linked
 4. AI-assisted search and questions with a bring-your-own key (Anthropic or Gemini), keys in the OS keychain,
    never in a database. Every AI answer carries a plain notice: AI can summarize and cross-reference text, but it

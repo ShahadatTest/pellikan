@@ -1,0 +1,97 @@
+import { BOOK_BY_OSIS } from '~~/shared/books'
+
+// Browser-style tabs. A tab is just a route; the route drives the active tab (navigating inside a tab
+// replaces that tab's path), and clicking a tab navigates back to its path.
+
+export interface Tab { id: string; path: string }
+
+const KEY = 'pellikan.tabs'
+export const DEFAULT_PATH = '/read/John/1'
+
+let seq = 0
+const newId = () => `t${Date.now().toString(36)}${(seq++).toString(36)}`
+
+/** Human title for a path, e.g. /read/Rom/8 -> "Romans 8". */
+export function tabTitle(path: string): { title: string; kind: 'read' | 'search' | 'page' } {
+  const url = new URL(path, 'http://x')
+  const m = url.pathname.match(/^\/read\/([^/]+)\/(\d+)/)
+  if (m) return { title: `${BOOK_BY_OSIS[m[1]!]?.name ?? m[1]} ${m[2]}`, kind: 'read' }
+  if (url.pathname === '/search') {
+    const q = url.searchParams.get('q')
+    return { title: q ? `Search: ${q}` : 'Search', kind: 'search' }
+  }
+  const names: Record<string, string> = { '/credits': 'Credits', '/library': 'Library', '/notes': 'Notes', '/highlights': 'Highlights' }
+  return { title: names[url.pathname] ?? 'Pellikan', kind: 'page' }
+}
+
+export function useTabs() {
+  const tabs = useState<Tab[]>('tabs', () => [])
+  const activeId = useState<string>('tabs-active', () => '')
+
+  function persist() {
+    try { localStorage.setItem(KEY, JSON.stringify({ tabs: tabs.value, activeId: activeId.value })) } catch { /* ignore */ }
+  }
+
+  function restore(currentPath: string) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null')
+      if (saved && Array.isArray(saved.tabs) && saved.tabs.every((t: Tab) => t && typeof t.id === 'string' && typeof t.path === 'string')) {
+        tabs.value = saved.tabs
+        activeId.value = saved.activeId
+      }
+    } catch { /* corrupt storage: start fresh */ }
+    sync(currentPath)
+  }
+
+  /** Called whenever the route changes. */
+  function sync(path: string) {
+    const active = tabs.value.find((t) => t.id === activeId.value)
+    if (active) active.path = path
+    else {
+      const id = newId()
+      tabs.value = [...tabs.value, { id, path }]
+      activeId.value = id
+    }
+    persist()
+  }
+
+  function open(path = DEFAULT_PATH) {
+    const id = newId()
+    tabs.value = [...tabs.value, { id, path }]
+    activeId.value = id
+    persist()
+    return navigateTo(path)
+  }
+
+  function activate(id: string) {
+    const t = tabs.value.find((x) => x.id === id)
+    if (!t) return
+    activeId.value = id
+    persist()
+    return navigateTo(t.path)
+  }
+
+  function close(id: string) {
+    const i = tabs.value.findIndex((t) => t.id === id)
+    if (i < 0) return
+    const wasActive = id === activeId.value
+    tabs.value = tabs.value.filter((t) => t.id !== id)
+    if (!tabs.value.length) {
+      // Never leave the window with no tab: closing the last one resets it to the default passage.
+      const nid = newId()
+      tabs.value = [{ id: nid, path: DEFAULT_PATH }]
+      activeId.value = nid
+      persist()
+      return navigateTo(DEFAULT_PATH)
+    }
+    if (wasActive) {
+      const next = tabs.value[Math.min(i, tabs.value.length - 1)]!
+      activeId.value = next.id
+      persist()
+      return navigateTo(next.path)
+    }
+    persist()
+  }
+
+  return { tabs, activeId, restore, sync, open, activate, close }
+}

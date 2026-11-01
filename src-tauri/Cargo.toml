@@ -1,12 +1,12 @@
 [package]
-name = "scriptorium"
+name = "pellikan"
 version = "0.0.1"
 description = "A local-first Bible study app"
 edition = "2021"
 rust-version = "1.77"
 
 [lib]
-name = "scriptorium_lib"
+name = "pellikan_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

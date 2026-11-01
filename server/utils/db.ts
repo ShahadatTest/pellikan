@@ -9,7 +9,7 @@ let db: DatabaseSync | null = null
 
 function open() {
   if (db) return db
-  const path = process.env.SCRIPTORIUM_DB ?? resolve(ROOT, 'data/build/bible.db')
+  const path = process.env.PELLIKAN_DB ?? resolve(ROOT, 'data/build/bible.db')
   if (!existsSync(path)) {
     throw createError({ statusCode: 503, statusMessage: 'bible.db not found. Run `npm run data` first.' })
   }

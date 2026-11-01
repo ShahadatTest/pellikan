@@ -1,6 +1,6 @@
 # Data sources, licenses and known data issues
 
-Scriptorium bundles data from the projects below. `npm run data:fetch` downloads it from the upstream hosts into
+Pellikan bundles data from the projects below. `npm run data:fetch` downloads it from the upstream hosts into
 `data/sources/` (git-ignored), and writes `data/sources/SOURCES.lock.json` with the URL and SHA-256 of every file, so a
 build can state exactly which bytes it came from. The in-app Credits page is generated from the `sources` table in
 `bible.db`, which `data/scripts/build-db.mjs` fills from the text in this file's tables.
@@ -10,10 +10,32 @@ I am not a lawyer. Verify each license against the upstream project before you d
 | Layer | Project | License | Notes |
 | --- | --- | --- | --- |
 | English text | World English Bible (ebible.org) | Public domain | The name "World English Bible" is a trademark of eBible.org. Do not use that name for a modified text. |
+| English text (optional) | English Standard Version, from Crossway's ESV Classic Reference Bible ePub | Copyright Crossway. **Not freely redistributable.** See below. | Built in only if you supply the epub. Includes section headings, footnotes and about 98,000 cross-references. |
 | Hebrew text | Westminster Leningrad Codex via OSHB | Public domain (text) | |
 | Hebrew lemmas and morphology | Open Scriptures Hebrew Bible | CC BY 4.0 | Attribution required. |
 | Greek text | SBL Greek New Testament | CC BY 4.0 per ebible.org | The MorphGNT README still cites the older SBLGNT EULA. Confirm the current terms before shipping. |
 | Greek morphology and lemmas | MorphGNT | CC BY-SA 3.0 | ShareAlike. See below. |
+
+## The ESV (optional, local only)
+
+The ESV is not open data. The permissions notice inside the epub (its Copyright page) allows quoting up to 1,000
+verses without written permission, only if the quotation is not a complete book of the Bible and is less than 50% of
+the work quoting it. It also says "ESV" and "English Standard Version" are Crossway trademarks that need permission
+to use. Pellikan's ESV text is the whole Bible, so a build that contains it is outside those terms unless Crossway
+has given a separate license for it. A DRM-free file means the file is not locked, not that the text is licensed for
+redistribution.
+
+How the repo handles that:
+
+- The epub is never committed or downloaded. Put your own copy at `data/sources/esv/esv_classic_reference_bible_4.epub`
+  (git-ignored), then `npm run data:build`. Without the file the build skips the ESV and everything else works.
+- `data/build/bible.db` is git-ignored too, so the ESV text does not enter the repo. A Tauri bundle built while the
+  epub is present does contain the full text. Do not publish or share that bundle without Crossway's permission.
+- The Credits page and the reader footer print the notice that Crossway's permissions page requires, taken from the
+  `sources` row for `ESV` in `data/scripts/build-db.mjs`. Keep "Used by permission" only if you actually have it.
+- Cross-references become one `xref` note per target verse (the epub's own verse ids, not parsed from the
+  abbreviated text). They are not marked in the verse text; they appear in the Cross References tab. Footnotes get a
+  marker as usual.
 
 ## The ShareAlike question
 
@@ -24,7 +46,7 @@ long as the data stays clearly separated and labelled. Whether combining the lay
 a single adaptation is a legal gray area. If it matters for your plans, ask a lawyer, or build a variant database
 without the Greek tagging.
 
-SWORD modules and the `libsword` library are GPL. Scriptorium does not link or ship either, so the GPL does not
+SWORD modules and the `libsword` library are GPL. Pellikan does not link or ship either, so the GPL does not
 apply here. If you ever add SWORD module import, keep that code behind a clear boundary and re-check the license.
 
 ## Known data issues (measured, not guessed)

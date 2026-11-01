@@ -1,4 +1,4 @@
--- Scriptorium user database (read/write). Created on first launch in the app data directory.
+-- Pellikan user database (read/write). Created on first launch in the app data directory.
 -- Idempotent: safe to run on every start. Needs PRAGMA foreign_keys = ON on the connection.
 --
 -- Not stored here on purpose: AI provider API keys. Those belong in the OS keychain

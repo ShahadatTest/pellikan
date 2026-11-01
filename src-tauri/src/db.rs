@@ -97,7 +97,7 @@ mod tests {
 
     /// The real database, if it has been built (`npm run data`). Tests that need it skip with a message otherwise.
     fn real_db() -> Option<Connection> {
-        let path = std::env::var("SCRIPTORIUM_DB").unwrap_or_else(|_| "../data/build/bible.db".into());
+        let path = std::env::var("PELLIKAN_DB").unwrap_or_else(|_| "../data/build/bible.db".into());
         match Connection::open_with_flags(&path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY) {
             Ok(c) => Some(c),
             Err(_) => {

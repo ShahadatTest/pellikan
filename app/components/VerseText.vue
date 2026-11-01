@@ -7,7 +7,7 @@
 // word study goes through the verse's Hebrew/Greek words, which come from OSHB and MorphGNT. See DATA_SOURCES.md.
 type Token = [string, string | null, number, number?]
 
-const props = defineProps<{ tokens: Token[] }>()
+const props = defineProps<{ tokens: Token[]; redLetters?: boolean }>()
 const emit = defineEmits<{ note: [seq: number] }>()
 
 const lines = computed(() => {
@@ -29,14 +29,14 @@ const lines = computed(() => {
     <template v-for="(t, i) in line" :key="i">
       <sup
         v-if="t[2] & 2"
-        class="mx-0.5 cursor-pointer select-none text-[0.65em] text-accent hover:underline dark:text-amber-300"
+        class="mx-0.5 cursor-pointer select-none text-[0.65em] text-brand hover:underline"
         role="button"
         tabindex="0"
         aria-label="Show note"
-        @click="emit('note', t[3]!)"
-        @keydown.enter="emit('note', t[3]!)"
+        @click.stop="emit('note', t[3]!)"
+        @keydown.enter.stop="emit('note', t[3]!)"
       >&#9642;</sup>
-      <span v-else :class="t[2] & 1 ? 'text-red-800 dark:text-red-300' : ''">{{ t[0] }}</span>
+      <span v-else :class="redLetters !== false && t[2] & 1 ? 'text-jesus' : ''">{{ t[0] }}</span>
     </template>
   </span>
 </template>

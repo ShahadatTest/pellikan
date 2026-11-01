@@ -1,4 +1,4 @@
--- Scriptorium reference database. Built by data/scripts/build-db.mjs, opened READ-ONLY by the app.
+-- Pellikan reference database. Built by data/scripts/build-db.mjs, opened READ-ONLY by the app.
 -- Anything the user creates (notes, highlights, imported books) lives in user.sql, a separate
 -- database file, so shipping new reference data can never touch it.
 --

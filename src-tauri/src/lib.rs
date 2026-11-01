@@ -23,7 +23,7 @@ fn query(state: State<'_, AppState>, name: String, params: Option<Map<String, Va
 /// Finds the reference database: an explicit override, then the app bundle, then the dev build output.
 fn find_bible_db(app: &tauri::App) -> Result<PathBuf, String> {
     let mut tried = Vec::new();
-    if let Ok(p) = std::env::var("SCRIPTORIUM_DB") {
+    if let Ok(p) = std::env::var("PELLIKAN_DB") {
         tried.push(PathBuf::from(p));
     }
     if let Ok(p) = app.path().resolve("bible.db", tauri::path::BaseDirectory::Resource) {
@@ -60,5 +60,5 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![query])
         .run(tauri::generate_context!())
-        .expect("error while running Scriptorium");
+        .expect("error while running Pellikan");
 }

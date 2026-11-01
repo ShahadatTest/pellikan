@@ -7,9 +7,11 @@
 
 import { DatabaseSync } from 'node:sqlite'
 import { readFile, mkdir, rm, stat } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { BOOKS } from '../../shared/books.ts'
 import { loadWeb } from './loaders/web.mjs'
+import { loadEsv } from './loaders/esv.mjs'
 import { loadOshb } from './loaders/oshb.mjs'
 import { loadMorphGnt } from './loaders/morphgnt.mjs'
 
@@ -59,6 +61,25 @@ const SOURCES = [
   },
 ]
 
+// Optional: only built in when the user supplies the epub (see DATA_SOURCES.md). The notice text is the one
+// Crossway's permissions page requires wherever the ESV is quoted.
+const ESV_EPUB = SRC + 'esv/esv_classic_reference_bible_4.epub'
+const ESV_SOURCE = {
+  id: 'ESV',
+  name: 'English Standard Version (ESV Classic Reference Bible)',
+  kind: 'translation',
+  language: 'en',
+  license: 'Copyright Crossway. Used by permission. All rights reserved.',
+  license_url: 'https://www.esv.org/permissions/',
+  attribution:
+    'Scripture quotations are from The ESV\u00ae Bible (The Holy Bible, English Standard Version\u00ae), copyright \u00a9 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved. Text, section headings, footnotes and cross-references from the ESV Classic Reference Bible ePub (ESV Text Edition: 2016).',
+  source_url: 'https://www.crossway.org/bibles/esv-classic-reference-bible-hardcover/',
+}
+
+async function fileExists(p) {
+  try { await stat(p); return true } catch { return false }
+}
+
 async function main() {
   const started = Date.now()
   const lock = JSON.parse(await readFile(SRC + 'SOURCES.lock.json', 'utf8'))
@@ -75,7 +96,9 @@ async function main() {
   const insSource = db.prepare(
     'INSERT INTO sources (id, name, kind, language, license, license_url, attribution, source_url, edition) VALUES (?,?,?,?,?,?,?,?,?)',
   )
-  for (const s of SOURCES) {
+  const hasEsv = await fileExists(ESV_EPUB)
+  if (!hasEsv) console.log('  (no ESV epub in data/sources/esv/, building without it)')
+  for (const s of hasEsv ? [...SOURCES, ESV_SOURCE] : SOURCES) {
     insSource.run(s.id, s.name, s.kind, s.language, s.license, s.license_url, s.attribution, s.source_url, `fetched ${edition}`)
   }
 
@@ -90,6 +113,14 @@ async function main() {
     const n = web.chapters.get(b.id)
     if (!n) throw new Error(`WEB has no text for ${b.name}`)
     setChapters.run(n, b.id)
+  }
+
+  if (hasEsv) {
+    const esv = await loadEsv(db, { epubPath: ESV_EPUB, log })
+    for (const b of BOOKS) {
+      const n = esv.chapters.get(b.id)
+      if (n !== web.chapters.get(b.id)) throw new Error(`ESV has ${n ?? 0} chapters for ${b.name}, the WEB has ${web.chapters.get(b.id)}`)
+    }
   }
 
   await loadOshb(db, { dir: SRC + 'oshb', log })
@@ -113,6 +144,8 @@ async function main() {
   for (const [path, f] of Object.entries(lock.files)) {
     if (path.endsWith('.xml') || path.endsWith('.zip') || path.endsWith('.txt')) insMeta.run('sha256:' + path, f.sha256)
   }
+
+  if (hasEsv) insMeta.run('sha256:esv/esv_classic_reference_bible_4.epub', createHash('sha256').update(await readFile(ESV_EPUB)).digest('hex'))
 
   db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`)
   db.exec('ANALYZE')
