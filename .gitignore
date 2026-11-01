@@ -1,0 +1,14 @@
+node_modules
+.nuxt
+.output
+dist
+.DS_Store
+.env
+
+# Downloaded source data and the database built from it (reproduce with `npm run data`)
+data/sources
+data/build
+
+# Rust
+src-tauri/target
+src-tauri/gen

@@ -1,0 +1,37 @@
+{
+  "name": "scriptorium",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "A local-first, open source Bible study app. Working name.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "data:fetch": "node --disable-warning=ExperimentalWarning data/scripts/fetch.mjs",
+    "data:build": "node --disable-warning=ExperimentalWarning data/scripts/build-db.mjs",
+    "data:check": "node --disable-warning=ExperimentalWarning data/scripts/check-db.mjs",
+    "data": "npm run data:fetch && npm run data:build && npm run data:check",
+    "test": "node --disable-warning=ExperimentalWarning --test \"data/scripts/**/*.test.mjs\" \"shared/**/*.test.mjs\""
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.4",
+    "nuxt": "^4.6.3",
+    "vue": "^3.5.44"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@tauri-apps/cli": "^2.12.4",
+    "fflate": "^0.8.3",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.0"
+  }
+}
