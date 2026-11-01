@@ -14,6 +14,8 @@ If something here is wrong, fix it in the same PR. These notes are only useful w
    "works" for something you did not run. Do not describe the Tauri window as tested until someone has launched it.
 3. **Accessibility problems are bugs.** See [ACCESSIBILITY.md](ACCESSIBILITY.md). Do not make the known gaps worse.
 4. **Small PRs.** One change per PR, with the checklist in the template filled in honestly.
+5. **Community standards.** Follow the [Code of Conduct](CODE_OF_CONDUCT.md) in all project spaces.
+6. **AI assistance.** Follow the [AI Policy](AI_POLICY.md). You are accountable for every line of code submitted.
 
 ## Set up
 
