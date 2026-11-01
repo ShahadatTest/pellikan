@@ -7,6 +7,8 @@
 A local-first Bible study app in the spirit of SWORD and Logos. Open source. Your notes, highlights and downloaded
 texts live on your computer. Nothing about your reading is sent anywhere.
 
+![Pellikan interface reading Luke 24 with commentary, cross-references, and Greek word study](public/screenshot.jpg)
+
 > **Status: early.** A preview installer for macOS (Apple Silicon) is available from the
 > [v0.0.1 release](https://github.com/philorien/pellikan/releases/tag/v0.0.1) (see [Download prebuilt app](#download-prebuilt-app-macos-apple-silicon)).
 > You can also build Pellikan from source to run in a browser or as a desktop app (see [Build from source](#build-from-source)).
