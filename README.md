@@ -15,6 +15,26 @@ texts live on your computer. Nothing about your reading is sent anywhere.
 > The packaged app is new, unsigned, and has had limited real-world testing.
 > See [What has been tested](#what-has-been-tested) for current testing status.
 
+## Why Pellikan
+
+The app is named for [Konrad Pellikan](https://en.wikipedia.org/wiki/Konrad_Pellikan) (1478 to 1556), a Franciscan friar
+from Rouffach in Alsace who became a Reformation-era scholar in Basel and Zurich. He was born Konrad Kürsner; his uncle
+Jodocus Gallus gave him the Latin name Pellicanus.
+
+Three things about him are close to what this project is trying to do:
+
+- **He worked in the original languages.** Johannes Reuchlin gave him hints for learning Hebrew and lent him a
+  grammar, and Pellikan went on to write what the article credits as the first Hebrew grammar by a Christian. This app
+  puts the Hebrew, Aramaic and Greek, with lexicons and morphology, one click from the English.
+- **He read the whole Bible with a commentator's patience.** His *Commentaria Bibliorum* (seven volumes, Zurich,
+  1532 to 1539) is praised for its judgment about the text and for reading historically rather than typologically.
+  The app sets Matthew Henry's commentary, cross-references and dictionaries beside the passage so the text and the
+  help for reading it are in one place.
+- **He was a teacher.** He taught Hebrew, Greek and theology in Basel and, from 1526 until his death, held the chair of
+  Hebrew and Greek at the Carolinum in Zurich. This app is meant to be a study companion in that spirit.
+
+The biography above is summarized from the linked Wikipedia article, which marks some of its own details as unsourced.
+
 ## What it does
 
 - **Read** with a passage picker, command palette (`Cmd/Ctrl+K`), browser-style tabs, adjustable text size, red-letter
