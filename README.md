@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/pellikan.svg" alt="Pellikan logo" width="240">
+  <img src="public/pellikan-mark-dark.svg" alt="Pellikan logo" width="240">
 </p>
 
 # Pellikan
@@ -26,7 +26,7 @@ Three things about him are close to what this project is trying to do:
 - **He worked in the original languages.** Johannes Reuchlin gave him hints for learning Hebrew and lent him a
   grammar, and Pellikan went on to write what the article credits as the first Hebrew grammar by a Christian. This app
   puts the Hebrew, Aramaic and Greek, with lexicons and morphology, one click from the English.
-- **He read the whole Bible with a commentator's patience.** His *Commentaria Bibliorum* (seven volumes, Zurich,
+- **He read the whole Bible with a commentator's patience.** His _Commentaria Bibliorum_ (seven volumes, Zurich,
   1532 to 1539) is praised for its judgment about the text and for reading historically rather than typologically.
   The app sets Matthew Henry's commentary, cross-references and dictionaries beside the passage so the text and the
   help for reading it are in one place.
@@ -81,14 +81,14 @@ To develop Pellikan, run it in a browser, use an Intel Mac, or run on Linux and 
 
 #### 1. Requirements
 
-| Tool | Why | Check |
-| --- | --- | --- |
-| **Node 22.18 or newer** | The UI and the data scripts. The scripts use Node's built-in `node:sqlite` and run TypeScript directly. | `node -v` |
-| **Git** | Cloning the repository | `git --version` |
-| **Rust** (stable) | Only for running or building the desktop window | `rustc -V` |
-| **Xcode Command Line Tools** (macOS) | Linker and the system web view (only for desktop / Rust) | `xcode-select --install` |
-| **Disk space** | ~700 MB for browser mode; ~4 GB total if compiling the desktop app (Rust build cache) | |
-| **Network, once** | The initial data build downloads the source texts (~100 MB) | |
+| Tool                                 | Why                                                                                                     | Check                    |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------ |
+| **Node 22.18 or newer**              | The UI and the data scripts. The scripts use Node's built-in `node:sqlite` and run TypeScript directly. | `node -v`                |
+| **Git**                              | Cloning the repository                                                                                  | `git --version`          |
+| **Rust** (stable)                    | Only for running or building the desktop window                                                         | `rustc -V`               |
+| **Xcode Command Line Tools** (macOS) | Linker and the system web view (only for desktop / Rust)                                                | `xcode-select --install` |
+| **Disk space**                       | ~700 MB for browser mode; ~4 GB total if compiling the desktop app (Rust build cache)                   |                          |
+| **Network, once**                    | The initial data build downloads the source texts (~100 MB)                                             |                          |
 
 Install Rust with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`. If you just installed it, ensure Cargo is in your `PATH` by running `source "$HOME/.cargo/env"` or restarting your terminal.
 
@@ -178,17 +178,17 @@ for localhost). Details are in [DATA_SOURCES.md](DATA_SOURCES.md#optional-transl
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `npm run data` | Fetch sources, build `bible.db`, run the checks |
-| `npm run data:fetch` / `data:build` / `data:check` | The three steps separately |
-| `npm run data:build:release` | Build without the ESV, for installers |
-| `npm run data:fetch -- --packs` then `npm run data:packs` | Build the downloadable translation packs into `data/build/packs/` |
-| `npm run dev` | Browser dev server with a dev-only query API (http://localhost:3000) |
-| `npm run tauri:dev` / `tauri:build` | Desktop app / installer |
-| `npm test` | Node unit tests |
-| `cd src-tauri && cargo test --lib` | Rust tests. Those that need data run against `data/build/bible.db` and silently pass if it is missing, so build it first (use `SDKROOT` if needed on macOS) |
-| `npm run build` | Static site build |
+| Command                                                   | What it does                                                                                                                                                |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run data`                                            | Fetch sources, build `bible.db`, run the checks                                                                                                             |
+| `npm run data:fetch` / `data:build` / `data:check`        | The three steps separately                                                                                                                                  |
+| `npm run data:build:release`                              | Build without the ESV, for installers                                                                                                                       |
+| `npm run data:fetch -- --packs` then `npm run data:packs` | Build the downloadable translation packs into `data/build/packs/`                                                                                           |
+| `npm run dev`                                             | Browser dev server with a dev-only query API (http://localhost:3000)                                                                                        |
+| `npm run tauri:dev` / `tauri:build`                       | Desktop app / installer                                                                                                                                     |
+| `npm test`                                                | Node unit tests                                                                                                                                             |
+| `cd src-tauri && cargo test --lib`                        | Rust tests. Those that need data run against `data/build/bible.db` and silently pass if it is missing, so build it first (use `SDKROOT` if needed on macOS) |
+| `npm run build`                                           | Static site build                                                                                                                                           |
 
 ## How it is built
 
