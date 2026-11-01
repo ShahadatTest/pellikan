@@ -24,7 +24,7 @@ function submit() {
         <div class="flex items-center gap-1.5" role="group" aria-label="Highlight colour">
           <button
             v-for="c in HIGHLIGHT_COLORS" :key="c" type="button"
-            class="size-5 rounded-full border-2"
+            class="size-6 rounded-full border-2"
             :style="{ background: `var(--hl-${c})` }"
             :class="currentColor === c ? 'border-fg' : 'border-line'"
             :aria-label="`Highlight ${c}`" :aria-pressed="currentColor === c"

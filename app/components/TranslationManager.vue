@@ -76,7 +76,7 @@ async function remove(id: string) {
           <p class="font-medium">{{ c.id }} <span class="font-normal text-muted">· {{ c.name }}</span></p>
           <p class="text-xs text-faint">{{ mb(c.bytes) }} download</p>
         </div>
-        <button type="button" class="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white hover:brightness-110 disabled:opacity-60" :disabled="!!busy[c.id]" :aria-label="`Download ${c.id}`" @click="install(c.id)">
+        <button type="button" class="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-accent-fg hover:brightness-110 disabled:opacity-60" :disabled="!!busy[c.id]" :aria-label="`Download ${c.id}`" @click="install(c.id)">
           <Download class="size-4" aria-hidden="true" />{{ busy[c.id] === 'installing' ? 'Downloading…' : failed[c.id] ? 'Try again' : 'Download' }}
         </button>
         <p v-if="failed[c.id]" class="w-full text-sm text-red-500">{{ failed[c.id] }}</p>

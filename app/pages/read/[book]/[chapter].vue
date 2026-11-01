@@ -146,6 +146,7 @@ useHead(() => ({ title: valid.value ? `${book.value!.name} ${chapter.value} · P
             </p>
           </div>
           <div v-else class="mx-auto max-w-[44rem]">
+            <h1 class="sr-only">{{ book!.name }} {{ chapter }}</h1>
             <p v-if="error" class="text-red-500">Could not load this chapter: {{ error.statusMessage || error.message }}</p>
             <p v-else-if="pending && !data" class="text-muted">Loading…</p>
 

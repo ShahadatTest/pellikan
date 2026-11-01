@@ -7,6 +7,8 @@ const open = useState('palette-open', () => false)
 const q = ref('')
 const active = ref(0)
 const input = ref<HTMLInputElement | null>(null)
+const dialog = ref<HTMLElement | null>(null)
+let opener: HTMLElement | null = null
 
 interface Item { key: string; label: string; hint: string; icon: typeof Search; go: () => void }
 
@@ -36,8 +38,30 @@ const items = computed<Item[]>(() => {
 
 watch(items, () => { active.value = 0 })
 watch(open, async (v) => {
-  if (v) { q.value = ''; await nextTick(); input.value?.focus() }
+  if (v) {
+    opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    q.value = ''
+    await nextTick()
+    input.value?.focus()
+  } else {
+    await nextTick()
+    // Return focus to whatever opened the palette. A navigation may have removed it; then focus falls back to the body.
+    if (opener?.isConnected) opener.focus()
+    opener = null
+  }
 })
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+function trapTab(e: KeyboardEvent) {
+  if (e.key !== 'Tab' || !dialog.value) return
+  const els = Array.from(dialog.value.querySelectorAll<HTMLElement>(FOCUSABLE))
+  if (!els.length) { e.preventDefault(); return }
+  const first = els[0]!
+  const last = els[els.length - 1]!
+  const cur = document.activeElement
+  if (e.shiftKey && (cur === first || !dialog.value.contains(cur))) { e.preventDefault(); last.focus() }
+  else if (!e.shiftKey && (cur === last || !dialog.value.contains(cur))) { e.preventDefault(); first.focus() }
+}
 
 function run(i: Item | undefined) {
   if (!i) return
@@ -60,7 +84,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onGlobal))
 
 <template>
   <div v-if="open" class="fixed inset-0 z-50 flex items-start justify-center bg-black/55 px-4 pt-[14vh]" @mousedown.self="open = false">
-    <div class="w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl" role="dialog" aria-label="Command palette" aria-modal="true">
+    <div ref="dialog" class="w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl" role="dialog" aria-label="Command palette" aria-modal="true" @keydown="trapTab">
       <div class="flex items-center gap-3 border-b border-line px-4">
         <Search class="size-5 shrink-0 text-muted" aria-hidden="true" />
         <input

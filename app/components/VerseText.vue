@@ -35,6 +35,7 @@ const lines = computed(() => {
         aria-label="Show note"
         @click.stop="emit('note', t[3]!)"
         @keydown.enter.stop="emit('note', t[3]!)"
+        @keydown.space.prevent.stop="emit('note', t[3]!)"
       >&#9642;</sup>
       <span v-else :class="[redLetters !== false && t[2] & 1 ? 'text-jesus' : '', t[2] & 4 ? 'italic' : '']">{{ t[0] }}</span>
     </template>

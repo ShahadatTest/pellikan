@@ -18,7 +18,7 @@ const items = computed(() => tabs.value.map((t) => ({ ...t, ...tabTitle(t.path) 
         <component :is="icons[t.kind]" class="size-4 shrink-0" :class="t.id === activeId ? 'text-accent' : ''" aria-hidden="true" />
         <span class="truncate">{{ t.title }}</span>
       </button>
-      <button type="button" class="mr-1.5 grid size-5 shrink-0 place-items-center rounded text-faint hover:bg-surface-2 hover:text-fg" :aria-label="`Close ${t.title}`" @click="close(t.id)">
+      <button type="button" class="mr-1.5 grid size-6 shrink-0 place-items-center rounded text-faint hover:bg-surface-2 hover:text-fg" :aria-label="`Close ${t.title}`" @click="close(t.id)">
         <X class="size-3.5" />
       </button>
     </div>
