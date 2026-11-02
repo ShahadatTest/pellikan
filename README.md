@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/pellikan-mark-dark.svg" alt="Pellikan logo" width="240">
+  <img src="public/pellikanreadme.png" alt="Pellikan logo" width="240">
 </p>
 
 # Pellikan
