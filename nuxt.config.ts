@@ -12,6 +12,9 @@ export default defineNuxtConfig({
   telemetry: false,
   app: {
     head: {
+      // WCAG 3.1.1 (Level A): document language for screen readers. UI chrome is
+      // English; downloadable translation packs keep their own lang on verse text.
+      htmlAttrs: { lang: 'en' },
       title: 'Pellikan',
       meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' }],
     },
