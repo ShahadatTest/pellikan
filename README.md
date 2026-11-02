@@ -4,6 +4,20 @@
 
 # Pellikan
 
+[![License: AGPL v3](https://img.shields.io/github/license/philorien/pellikan)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/philorien/pellikan?include_prereleases&label=release)](https://github.com/philorien/pellikan/releases)
+[![Open issues](https://img.shields.io/github/issues/philorien/pellikan)](https://github.com/philorien/pellikan/issues)
+[![Open pull requests](https://img.shields.io/github/issues-pr/philorien/pellikan)](https://github.com/philorien/pellikan/pulls)
+[![Last commit](https://img.shields.io/github/last-commit/philorien/pellikan)](https://github.com/philorien/pellikan/commits/main)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](CONTRIBUTING.md)
+[![Roadmap](https://img.shields.io/badge/roadmap-GitHub%20Project-blue)](https://github.com/users/philorien/projects/2)
+
+[![Nuxt 4](https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxt&logoColor=white)](https://nuxt.com)
+[![Tauri 2](https://img.shields.io/badge/Tauri-2-24C8D8?logo=tauri&logoColor=white)](https://tauri.app)
+[![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![SQLite](https://img.shields.io/badge/SQLite-FTS5-003B57?logo=sqlite&logoColor=white)](https://sqlite.org)
+[![Accessibility target: WCAG 2.2 AA](https://img.shields.io/badge/a11y_target-WCAG_2.2_AA-informational)](ACCESSIBILITY.md)
+
 A local-first Bible study app in the spirit of SWORD and Logos. Open source. Your notes, highlights and downloaded
 texts live on your computer. Nothing about your reading is sent anywhere.
 
@@ -245,6 +259,8 @@ Measured details are in [DATA_SOURCES.md](DATA_SOURCES.md). The ones that matter
 - Hebrew, Greek and English verse numbers are mapped, with a handful of documented exceptions.
 
 ## Roadmap
+
+The live roadmap, with status for each item, is the [Pellikan GitHub Project](https://github.com/users/philorien/projects/2). The list below is the long-range order.
 
 1. Refine the packaged desktop app on macOS, then add CI that runs the Node and Rust tests.
 2. Move notes, highlights and bookmarks into `user.db` (the schema is ready; it needs Rust write commands).

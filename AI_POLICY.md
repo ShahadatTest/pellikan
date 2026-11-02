@@ -1,5 +1,7 @@
 # AI Policy
 
+[![AI-assisted contributions: disclose](https://img.shields.io/badge/AI--assisted_PRs-disclose-blueviolet)](#in-practice)
+
 AI-augmented contributions are welcome as long as they meet the standards in this file. We only want AI used ethically, or not at all. Not using it is a perfectly good choice here, and nobody will think less of your PR for being written by hand.
 
 Using AI ethically in coding means writing and maintaining software with accountability, transparency, and a commitment to quality. Large language models (LLMs) and code assistants generate text based on patterns, not an understanding of logic. That makes them a collaborator, never a replacement for human judgment.

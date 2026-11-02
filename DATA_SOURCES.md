@@ -1,5 +1,8 @@
 # Data sources, licenses and known data issues
 
+[![Code: AGPL v3](https://img.shields.io/github/license/philorien/pellikan?label=code)](LICENSE)
+[![Data: licensed separately](https://img.shields.io/badge/data-licensed_separately-orange)](#data-sources-licenses-and-known-data-issues)
+
 Pellikan bundles data from the projects below. `npm run data:fetch` downloads it from the upstream hosts into
 `data/sources/` (git-ignored), and writes `data/sources/SOURCES.lock.json` with the URL and SHA-256 of every file, so a
 build can state exactly which bytes it came from. The in-app Credits page is generated from the `sources` table in

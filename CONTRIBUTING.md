@@ -1,5 +1,8 @@
 # Contributing to Pellikan
 
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](CONTRIBUTING.md)
+[![Open issues](https://img.shields.io/github/issues/philorien/pellikan)](https://github.com/philorien/pellikan/issues)
+
 This file is for people who will maintain Pellikan: how the project is put together, what must not be broken, and how
 to do the jobs that come up. [README.md](README.md) covers installing and running it. [AGENTS.md](AGENTS.md) is the
 short version of the conventions below, written for AI coding agents.
