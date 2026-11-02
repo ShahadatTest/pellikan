@@ -49,7 +49,7 @@ useHead({ title: 'Dictionary · Pellikan' })
       <form class="mt-4 flex gap-2" role="search" @submit.prevent="submit">
         <label class="sr-only" for="dict-q">Look up a word</label>
         <input id="dict-q" v-model="input" type="search" placeholder="Aaron, tabernacle, Nicodemus…" class="min-w-0 flex-1 rounded-lg border border-line bg-bg px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-accent" />
-        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 font-medium text-white hover:brightness-110"><Search class="size-4" aria-hidden="true" />Look up</button>
+        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 font-medium text-accent-fg hover:brightness-110"><Search class="size-4" aria-hidden="true" />Look up</button>
       </form>
       <p v-if="error" class="mt-4 text-red-500">Lookup failed: {{ error.statusMessage || error.message }}</p>
 

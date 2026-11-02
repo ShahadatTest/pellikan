@@ -43,7 +43,7 @@ const paragraphs = (c: Comment) => c.body.split('\n')
         <button
           v-for="c in comments" :key="c.verse_start" type="button" role="tab" :aria-selected="active?.verse_start === c.verse_start"
           class="rounded-md px-2 py-0.5 text-xs"
-          :class="active?.verse_start === c.verse_start ? 'bg-accent text-white' : 'bg-surface-2 text-muted hover:text-fg'"
+          :class="active?.verse_start === c.verse_start ? 'bg-accent text-accent-fg' : 'bg-surface-2 text-muted hover:text-fg'"
           @click="picked = c.verse_start"
         >{{ c.verse_start === 0 ? 'Overview' : c.verse_start === c.verse_end ? c.verse_start : `${c.verse_start}–${c.verse_end}` }}</button>
       </div>

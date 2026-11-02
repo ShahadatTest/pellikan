@@ -23,7 +23,7 @@ Treat everything under "In place" as "present in the code", not "confirmed to wo
 
 - **Keyboard.** `Cmd/Ctrl+K` opens the command palette. In it, Up and Down move, Enter selects, Escape closes. Menus
   (passage picker, settings) close on Escape. Verse numbers in the reader are real buttons, so a verse can be selected
-  without a mouse. Footnote markers are focusable and respond to Enter. `Cmd/Ctrl+Enter` saves a note.
+  without a mouse. Footnote markers are focusable and respond to Enter and Space. `Cmd/Ctrl+Enter` saves a note.
 - **Visible focus.** A global `:focus-visible` outline (2 px, accent color, 2 px offset) applies to everything.
 - **Names for controls.** Icon-only buttons (close tab, new tab, delete note, previous and next chapter, theme toggle,
   text size, print) have `aria-label`s. Tab strips use `role="tablist"` / `role="tab"` with `aria-selected`.
@@ -51,8 +51,8 @@ Ratios against the surface the text sits on. WCAG AA needs **4.5:1** for normal 
 | `muted` | Secondary text | 5.6 | 7.4 | Pass |
 | `accent` | Links, active items | 6.2 | 7.9 | Pass |
 | `jesus` (red letters) | Words of Jesus | 7.2 | 8.6 | Pass; 5.3 to 5.8 on highlights in light, 4.9 on yellow or green in dark |
-| `faint` | Verse numbers, labels, hints, placeholders | **3.1** | **3.9** | **Fails** for normal text in both themes |
-| `brand` | Small uppercase section labels | **3.3** | 7.1 | **Fails** in light |
+| `faint` | Verse numbers, labels, hints, placeholders | 4.5 to 5.1 | 5.1 to 6.0 | Pass (lowest value is on `surface-2`) |
+| `brand` | Small uppercase section labels, footnote markers | 5.0 to 5.7 | 6.3 to 7.6 | Pass |
 | `accent-fg` on `accent` | Text on buttons | 6.5 | 8.6 | Pass |
 | `fg` on highlight colors | Highlighted verses | 11.3 to 12.6 | 8.0 to 9.9 | Pass |
 
@@ -61,29 +61,30 @@ the hex values in `app/assets/css/main.css`.
 
 ## Known gaps
 
-These were found by reading the code and measuring. Nothing here has been fixed yet. Roughly in order of impact.
+These were found by reading the code and measuring. Items struck through have been fixed in code but not re-tested with assistive technology. Roughly in order of impact.
 
-1. **`text-faint` fails contrast.** It is used for verse numbers, panel hints, placeholders and small metadata, in both themes (3.1:1 light, 3.9:1 dark). Darken it in light mode and lighten it in dark mode until it
+1. ~~**`text-faint` fails contrast.**~~ Fixed: `faint` and the light `brand` were re-tuned to 4.5:1 or better. Original note:
+   **`text-faint` fails contrast.** It is used for verse numbers, panel hints, placeholders and small metadata, in both themes (3.1:1 light, 3.9:1 dark). Darken it in light mode and lighten it in dark mode until it
    reaches 4.5:1, or stop using it for text that carries meaning. This affects the most-seen text in the reader (the
    verse numbers).
-2. **`text-brand` fails in light mode** (3.3:1) and is used for small bold uppercase labels such as "Footnote" and the
+2. ~~**`text-brand` fails in light mode**~~ Fixed, see 1. Original note: **`text-brand` fails in light mode** (3.3:1) and is used for small bold uppercase labels such as "Footnote" and the
    the Commentary and Dictionary source labels. Use a darker variant for text.
 3. **No skip link.** Keyboard users tab through the sidebar, top bar and tab strip on every page before reaching the
    content. Add a "Skip to main content" link as the first focusable element.
-4. **The command palette does not trap focus.** It declares `aria-modal="true"` but Tab can move to the page behind it.
+4. ~~**The command palette does not trap focus.**~~ Fixed: Tab and Shift+Tab wrap inside the dialog and focus returns to the opener on close. Original note: **The command palette does not trap focus.** It declares `aria-modal="true"` but Tab can move to the page behind it.
    Trap focus inside while open and return it to the control that opened it when it closes.
 5. **Selecting a verse by clicking its text is pointer-only.** The verse number button is keyboard accessible, so the
    function is reachable, but the whole-verse click target is a plain `span`. Make sure focus order and the selected
    state are announced when a verse is chosen.
 6. **The tab strip is not a full ARIA tabs widget.** It has the roles but not the Left and Right arrow-key behavior or
    roving `tabindex` the pattern expects. It is also hidden below the `md` breakpoint (phones use the bottom navigation).
-7. **Small targets.** Some controls are 20 px square (the close button on each tab, the highlight color swatches), under
+7. ~~**Small targets.**~~ Tab close buttons and highlight swatches are now 24 px; the 44 px touch size is still not met. Original note: some controls were 20 px square (the close button on each tab, the highlight color swatches), under
    the 24 px minimum in WCAG 2.2 criterion 2.5.8 and well under the usual 44 px for touch.
 8. **Few live regions.** Searches, chapter loads, installs and the Word Study results update the page without telling a
    screen reader. Only one place uses `role="status"`. Add polite live regions for result counts and completion.
-9. **Language is not marked everywhere.** The Greek and Hebrew words in the original-language panel do not carry `lang`
+9. ~~**Language is not marked everywhere.**~~ Fixed: original-language words carry `lang="grc"` or `lang="he"`. Original note: The Greek and Hebrew words in the original-language panel do not carry `lang`
    attributes (the lexicon headwords do). Without them a screen reader may read Greek with an English voice.
-10. **The reader has no `h1`.** Every other page has one, but in the normal reading view the heading is missing (the
+10. ~~**The reader has no `h1`.**~~ Fixed with a screen-reader-only `h1` (book and chapter). Original note: Every other page has one, but in the normal reading view the heading is missing (the
     passage name is inside a picker button), and the study panels use their own headings. The outline has not been
     checked for skipped levels.
 11. **Hover and color-only hints.** Some information (for example, which Hebrew psalm title is clickable, and the
@@ -117,7 +118,7 @@ Component rules:
 
 - Every button has a text label or an `aria-label`. Icon-only buttons mark the icon `aria-hidden="true"`.
 - Use real `button`, `a`, `label` and form elements before reaching for a `div` with a handler.
-- Do not use `text-faint` or `text-brand` for text. Use `text-muted` or `text-fg`.
+- Text colors must reach 4.5:1 on the surfaces they sit on in both themes, including `text-faint` and `text-brand`. Use `text-accent-fg` (not `text-white`) on `bg-accent`.
 - Targets are at least 24 by 24 px, and 44 by 44 px for primary touch controls.
 - State changes the user cannot see on their own (a download finished, search returned 25 results) go in a polite live
   region.

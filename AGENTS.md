@@ -2,7 +2,7 @@
 
 Guidance for AI coding agents working in Pellikan. Humans: see [README.md](README.md) for setup and status.
 Maintainer workflow, data and licensing rules: [CONTRIBUTING.md](CONTRIBUTING.md). Accessibility rules and known gaps:
-[ACCESSIBILITY.md](ACCESSIBILITY.md). Policy on AI contributions: [AI_POLICY.md](AI_POLICY.md). Do not use `text-faint` or `text-brand` for text; they fail contrast.
+[ACCESSIBILITY.md](ACCESSIBILITY.md). Policy on AI contributions: [AI_POLICY.md](AI_POLICY.md).
 
 ## What this is
 

@@ -31,7 +31,7 @@ function describe(w: Word): string {
           :title="describe(w)"
           @click="emit('pick', w)"
         >
-          <span :class="w.lang === 'grc' ? 'font-greek text-xl' : 'font-hebrew text-2xl'">{{ w.text }}</span>
+          <span :lang="w.lang === 'grc' ? 'grc' : 'he'" :class="w.lang === 'grc' ? 'font-greek text-xl' : 'font-hebrew text-2xl'">{{ w.text }}</span>
           <span class="text-xs text-muted" dir="ltr">{{ w.lemma ?? w.strongs ?? '' }}</span>
           <span class="text-[0.7rem] text-faint" dir="ltr">{{ w.strongs ?? '' }}</span>
         </button>
