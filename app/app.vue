@@ -22,6 +22,7 @@ watch(() => route.fullPath, (p) => { if (p !== '/') sync(p) })
 
 <template>
   <div class="flex h-full pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+    <NuxtRouteAnnouncer />
     <AppSidebar />
     <div class="flex min-w-0 flex-1 flex-col">
       <TopBar />

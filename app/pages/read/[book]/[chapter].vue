@@ -97,7 +97,7 @@ const next = computed(() => {
 const originalVerse = computed(() => selectedVerse.value ?? data.value?.verses[0]?.verse ?? 1)
 const hlColor = (v: number) => highlights.value[verseKey(route.params.book as string, chapter.value, v)]
 
-useHead(() => ({ title: valid.value ? `${book.value!.name} ${chapter.value} · Pellikan` : 'Pellikan' }))
+useHead(() => ({ title: valid.value ? `${book.value!.name} ${chapter.value} · Pellikan` : 'Passage not found · Pellikan' }))
 </script>
 
 <template>

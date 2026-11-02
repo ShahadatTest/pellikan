@@ -39,6 +39,7 @@ Treat everything under "In place" as "present in the code", not "confirmed to wo
 - **Themes.** Light, dark, and follow-the-system. The theme is applied before first paint so there is no flash.
 - **Hebrew.** The original-language panel sets right-to-left direction for Hebrew and Aramaic words, and the lexicon
   headwords carry `lang` and `dir`.
+- **Route changes.** `<NuxtRouteAnnouncer />` in `app/app.vue` announces the document title when the SPA route changes, so screen readers hear chapter and page moves. Invalid passages use the title `Passage not found · Pellikan` instead of the bare site name.
 - **Document language.** The root `<html>` element sets `lang="en"` (WCAG 3.1.1 Level A) so screen readers pick an
   English voice for the UI. Downloadable Bible packs that are not English should set `lang` on their verse containers
   when that language is known.
