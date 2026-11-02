@@ -96,3 +96,11 @@ test('toFtsQuery never emits raw FTS syntax', () => {
   assert.equal(toFtsQuery('   '), null)
   assert.equal(toFtsQuery('***'), null)
 })
+
+
+test('toFtsQuery: punctuation-only input yields null (search page empty-query path)', () => {
+  for (const q of ['???', '***', '@#$', '   ', '""']) {
+    assert.equal(toFtsQuery(q, { prefix: false }), null, q)
+  }
+  assert.ok(toFtsQuery('love', { prefix: false }))
+})

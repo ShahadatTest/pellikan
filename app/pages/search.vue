@@ -60,6 +60,7 @@ useHead({ title: 'Search · Pellikan' })
 
       <p v-if="error" class="mt-6 text-red-500">Search failed: {{ error.statusMessage || error.message }}</p>
       <p v-else-if="pending" class="mt-6 text-muted">Searching…</p>
+      <p v-else-if="term && !data" class="mt-6 text-muted">No searchable words found in query.</p>
       <template v-else-if="data">
         <p class="mt-6 text-sm text-muted">{{ data.total.toLocaleString() }} verse{{ data.total === 1 ? '' : 's' }}</p>
         <ul class="mt-2 divide-y divide-line">
