@@ -1,5 +1,8 @@
 # Accessibility
 
+[![Accessibility target: WCAG 2.2 AA](https://img.shields.io/badge/a11y_target-WCAG_2.2_AA-informational)](#accessibility)
+[![Open accessibility issues](https://img.shields.io/github/issues/philorien/pellikan/accessibility?label=open%20a11y%20issues&color=f143ab)](https://github.com/philorien/pellikan/labels/accessibility)
+
 Pellikan is a reading and study tool, so it has to be usable by people who read in different ways: with a keyboard
 instead of a mouse, with a screen reader, with low vision, with a lot of text zoom, or in a dim room.
 
