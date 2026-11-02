@@ -10,6 +10,7 @@
 [![Open pull requests](https://img.shields.io/github/issues-pr/philorien/pellikan)](https://github.com/philorien/pellikan/pulls)
 [![Last commit](https://img.shields.io/github/last-commit/philorien/pellikan)](https://github.com/philorien/pellikan/commits/main)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](CONTRIBUTING.md)
+[![Good first issues](https://img.shields.io/github/issues/philorien/pellikan/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/philorien/pellikan/labels/good%20first%20issue)
 [![Roadmap](https://img.shields.io/badge/roadmap-GitHub%20Project-blue)](https://github.com/users/philorien/projects/2)
 
 [![Nuxt 4](https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxt&logoColor=white)](https://nuxt.com)
